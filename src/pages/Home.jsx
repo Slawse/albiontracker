@@ -9,12 +9,12 @@ const TOP_WEAPONS = [
   { name: 'Cursed Staff', type: 'Bâton maudit', winrate: '54.7%', tier: 'A', content: 'Corrupted' },
 ]
 
-export default function Home({ onSearch }) {
+export default function Home({ onSearch, loading }) {
   const [query, setQuery] = useState('')
   const [focus, setFocus] = useState(false)
 
   function submit() {
-    if (!query.trim()) return
+    if (!query.trim() || loading) return
     onSearch(query)
   }
 
@@ -38,10 +38,13 @@ export default function Home({ onSearch }) {
           onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)}
           onKeyDown={(e) => e.key === 'Enter' && submit()}
-          placeholder="Ex: slaw, xernon, chukak"
+          placeholder="Ex: slaw, xernon, chukak ou vrai pseudo Albion"
+          disabled={loading}
         />
 
-        <button onClick={submit}>RECHERCHER →</button>
+        <button onClick={submit} disabled={loading}>
+          {loading ? 'CHARGEMENT...' : 'RECHERCHER →'}
+        </button>
       </div>
 
       <section className="stats">

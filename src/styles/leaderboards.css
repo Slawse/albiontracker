@@ -1,0 +1,98 @@
+.leaderPage {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 50px 42px 80px;
+}
+
+.leaderTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: 28px;
+}
+
+.leaderTop h1 {
+  margin: 0;
+  font-size: 64px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.leaderTop p {
+  color: #8792a8;
+  font-weight: 800;
+}
+
+.leaderSwitch {
+  display: flex;
+  gap: 10px;
+}
+
+.leaderSwitch button {
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255,255,255,.06);
+  color: #c8cfdd;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.leaderSwitch .activeLeader {
+  background: rgba(124,106,240,.35);
+  color: white;
+}
+
+.leaderBoard {
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(10,16,32,.78);
+  border: 1px solid rgba(255,255,255,.1);
+}
+
+.leaderHeader,
+.leaderRow {
+  display: grid;
+  grid-template-columns: 70px 1.7fr 120px 120px 120px 120px;
+  align-items: center;
+  gap: 12px;
+}
+
+.leaderHeader {
+  padding: 12px 18px;
+  color: #7f8aa1;
+  font-size: 12px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.leaderRow {
+  margin-bottom: 10px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.leaderRank {
+  color: #ffbd2e;
+  font-weight: 1000;
+  font-size: 20px;
+}
+
+.leaderPlayer strong {
+  display: block;
+  font-size: 17px;
+}
+
+.leaderPlayer span {
+  display: block;
+  margin-top: 4px;
+  color: #8792a8;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.green { color: #28e98b; }
+.red { color: #ff5f6d; }
+.gold { color: #ffbd2e; }
