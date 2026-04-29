@@ -2,64 +2,106 @@ import { useState } from 'react'
 import '../styles/tracker.css'
 import { getItemImage, cleanItemName } from '../utils/items'
 
+function getWeaponStatsFromFights(fights = []) {
+  const weapons = {}
+
+  fights.forEach((fight) => {
+    const weapon = fight.weapon || 'Inconnu'
+
+    if (!weapons[weapon]) {
+      weapons[weapon] = {
+        weapon,
+        kills: 0,
+        deaths: 0,
+      }
+    }
+
+    if (fight.type === 'kill') weapons[weapon].kills += 1
+    if (fight.type === 'death') weapons[weapon].deaths += 1
+  })
+
+  return Object.values(weapons)
+    .map((weapon) => {
+      const total = weapon.kills + weapon.deaths
+
+      return {
+        ...weapon,
+        total,
+        kd: (weapon.kills / Math.max(weapon.deaths, 1)).toFixed(2),
+        winrate: total ? `${Math.round((weapon.kills / total) * 100)}%` : '0%',
+      }
+    })
+    .sort((a, b) => b.total - a.total)
+}
+
 export default function PlayerProfile({ player }) {
   const [tab, setTab] = useState('overview')
+  const [visibleFights, setVisibleFights] = useState(10)
 
   if (!player) return null
 
   const kd = (player.kills / Math.max(player.deaths, 1)).toFixed(2)
-  const winrate = Math.round((player.kills / Math.max(player.kills + player.deaths, 1)) * 100)
+  const winrate = Math.round(
+    (player.kills / Math.max(player.kills + player.deaths, 1)) * 100
+  )
 
-  const weaponStats = [
-    { weapon: 'Bloodletter', mode: 'Mists', kd: '8.9 / 4.1 / 6.6', kills: 69, deaths: 51, winrate: '63%', tier: 'S' },
-    { weapon: 'Dagger Pair', mode: 'Corrupted', kd: '6.7 / 6.3 / 9.3', kills: 70, deaths: 67, winrate: '51%', tier: 'S' },
-    { weapon: 'Carving Sword', mode: 'Mists', kd: '10 / 7.0 / 5.7', kills: 32, deaths: 15, winrate: '68%', tier: 'A' },
-    { weapon: 'Cursed Staff', mode: 'Corrupted', kd: '3.7 / 4.7 / 3.3', kills: 18, deaths: 19, winrate: '48%', tier: 'A' },
-    { weapon: 'Great Holy', mode: 'Hellgate', kd: '4.0 / 5.0 / 3.5', kills: 22, deaths: 12, winrate: '65%', tier: 'B' },
-  ]
+  const fights = player.fights || []
+  const weaponStats = getWeaponStatsFromFights(fights)
+  const visibleFightList = fights.slice(0, visibleFights)
 
   return (
     <main className="trackerPage">
       <section className="trackerGrid">
         <aside className="trackerSidebar">
-          <div className="profileCard">
-            <div className="profileAvatar">{player.name.slice(0, 2).toUpperCase()}</div>
+          <div className="profileCard noAvatar">
             <h1>{player.name}</h1>
             <p>{player.guild}</p>
-            <span>{player.tag}</span>
+            <span className="guildTag">{player.tag}</span>
           </div>
 
           <div className="weaponPerformance">
             <div className="weaponPerfTop">
               <strong>Performance par arme</strong>
-              <span>Mode · kills · morts · WR</span>
+              <span>Basé sur les fights chargés</span>
             </div>
 
             <div className="weaponPerfHead">
               <span>Arme</span>
-              <span>K/D/A</span>
+              <span>KD</span>
               <span>K</span>
               <span>D</span>
               <span>WR</span>
             </div>
 
-            {weaponStats.map((w) => (
-              <div className="weaponPerfRow" key={w.weapon}>
-                <div className="weaponPerfName">
-                  <div className={`weaponMini perfTier${w.tier}`}>{w.tier}</div>
+            {weaponStats.length > 0 ? (
+              weaponStats.map((weapon) => (
+                <div className="weaponPerfRow" key={weapon.weapon}>
+                  <div className="weaponPerfName">
+                    {weapon.weapon !== 'Inconnu' ? (
+                      <img
+                        className="weaponIcon"
+                        src={getItemImage(weapon.weapon)}
+                        alt={cleanItemName(weapon.weapon)}
+                      />
+                    ) : (
+                      <div className="weaponMini">?</div>
+                    )}
 
-                  <div>
-                    <strong>{w.weapon}</strong>
-                    <small>{w.mode}</small>
+                    <div>
+                      <strong>{cleanItemName(weapon.weapon)}</strong>
+                      <small>{weapon.total} fights</small>
+                    </div>
                   </div>
-                </div>
 
-                <span>{w.kd}</span>
-                <b className="green">{w.kills}</b>
-                <b className="red">{w.deaths}</b>
-                <b className="gold">{w.winrate}</b>
-              </div>
-            ))}
+                  <span>{weapon.kd}</span>
+                  <b className="green">{weapon.kills}</b>
+                  <b className="red">{weapon.deaths}</b>
+                  <b className="gold">{weapon.winrate}</b>
+                </div>
+              ))
+            ) : (
+              <p className="emptyWeaponStats">Aucune arme trouvée</p>
+            )}
           </div>
 
           <div className="sideStats">
@@ -110,7 +152,7 @@ export default function PlayerProfile({ player }) {
               </div>
 
               <div className="matchList">
-                {player.fights?.map((fight) => (
+                {visibleFightList.map((fight) => (
                   <details className={`matchRow ${fight.type}`} key={fight.id}>
                     <summary>
                       <div className="matchResult">
@@ -153,7 +195,7 @@ export default function PlayerProfile({ player }) {
 
                         <div className="itemGrid">
                           {fight.killerInventory?.map((item) => (
-                            <div className="itemSlot itemSlotImage" key={item}>
+                            <div className="itemSlot itemSlotImage" key={`${fight.id}-killer-${item}`}>
                               <img
                                 src={getItemImage(item)}
                                 alt={cleanItemName(item)}
@@ -169,7 +211,7 @@ export default function PlayerProfile({ player }) {
 
                         <div className="itemGrid">
                           {fight.victimInventory?.map((item) => (
-                            <div className="itemSlot itemSlotImage" key={item}>
+                            <div className="itemSlot itemSlotImage" key={`${fight.id}-victim-${item}`}>
                               <img
                                 src={getItemImage(item)}
                                 alt={cleanItemName(item)}
@@ -184,7 +226,9 @@ export default function PlayerProfile({ player }) {
                         <h3>Aides</h3>
 
                         {fight.assists?.length > 0 ? (
-                          fight.assists.map((a) => <span key={a}>{a}</span>)
+                          fight.assists.map((assist) => (
+                            <span key={`${fight.id}-${assist}`}>{assist}</span>
+                          ))
                         ) : (
                           <p>Aucune aide</p>
                         )}
@@ -193,6 +237,15 @@ export default function PlayerProfile({ player }) {
                   </details>
                 ))}
               </div>
+
+              {visibleFights < fights.length && (
+                <button
+                  className="loadMoreBtn"
+                  onClick={() => setVisibleFights((value) => value + 10)}
+                >
+                  Voir plus
+                </button>
+              )}
             </>
           )}
 

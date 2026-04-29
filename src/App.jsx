@@ -22,6 +22,77 @@ import {
   getPlayerDeaths,
 } from './api/albionApi'
 
+function formatFame(value) {
+  return `${Math.round((value || 0) / 1000)}K`
+}
+
+function formatMillions(value) {
+  if (!value) return '0'
+  return `${Math.round(value / 1000000)}M`
+}
+
+function formatFightDate(timestamp) {
+  if (!timestamp) return 'Date inconnue'
+
+  return new Date(timestamp).toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function getInventory(equipment) {
+  return Object.values(equipment || {})
+    .filter(Boolean)
+    .map((item) => item.Type)
+}
+
+function formatKillFight(fight, index) {
+  return {
+    id: `kill-${fight.EventId || index}`,
+    type: 'kill',
+    opponent: fight.Victim?.Name || 'Inconnu',
+    fame: formatFame(fight.TotalVictimKillFame),
+    zone: fight.Location || 'Zone inconnue',
+    time: formatFightDate(fight.TimeStamp),
+    rawDate: fight.TimeStamp ? new Date(fight.TimeStamp).getTime() : 0,
+    weapon: fight.Killer?.Equipment?.MainHand?.Type || 'Inconnu',
+
+    killerInventory: getInventory(fight.Killer?.Equipment),
+    victimInventory: getInventory(fight.Victim?.Equipment),
+
+    assists:
+      fight.Participants
+        ?.filter((p) => p.Name !== fight.Killer?.Name)
+        .map((p) => p.Name)
+        .slice(0, 4) || [],
+  }
+}
+
+function formatDeathFight(fight, index) {
+  return {
+    id: `death-${fight.EventId || index}`,
+    type: 'death',
+    opponent: fight.Killer?.Name || 'Inconnu',
+    fame: formatFame(fight.TotalVictimKillFame),
+    zone: fight.Location || 'Zone inconnue',
+    time: formatFightDate(fight.TimeStamp),
+    rawDate: fight.TimeStamp ? new Date(fight.TimeStamp).getTime() : 0,
+    weapon: fight.Victim?.Equipment?.MainHand?.Type || 'Inconnu',
+
+    killerInventory: getInventory(fight.Killer?.Equipment),
+    victimInventory: getInventory(fight.Victim?.Equipment),
+
+    assists:
+      fight.Participants
+        ?.filter((p) => p.Name !== fight.Killer?.Name)
+        .map((p) => p.Name)
+        .slice(0, 4) || [],
+  }
+}
+
 export default function App() {
   const [page, setPage] = useState('home')
   const [player, setPlayer] = useState(null)
@@ -29,7 +100,7 @@ export default function App() {
 
   async function handleSearch(query) {
     const name = query.trim()
-    if (!name) return
+    if (!name || loading) return
 
     setLoading(true)
 
@@ -53,26 +124,21 @@ export default function App() {
       const kills = await getPlayerKills(found.Id)
       const deaths = await getPlayerDeaths(found.Id)
 
+      const fights = [
+        ...kills.map(formatKillFight),
+        ...deaths.map(formatDeathFight),
+      ]
+        .sort((a, b) => b.rawDate - a.rawDate)
+
       const formattedPlayer = {
-        name: profile.Name,
+        name: profile.Name || found.Name,
         guild: profile.GuildName || 'Sans guilde',
         tag: profile.GuildTag || '---',
 
-        pvp: profile.KillFame
-          ? `${Math.round(profile.KillFame / 1000000)}M`
-          : '0',
-
-        pve: profile.LifetimeStatistics?.PvE?.Total
-          ? `${Math.round(profile.LifetimeStatistics.PvE.Total / 1000000)}M`
-          : '0',
-
-        gathering: profile.LifetimeStatistics?.Gathering?.All?.Total
-          ? `${Math.round(profile.LifetimeStatistics.Gathering.All.Total / 1000000)}M`
-          : '0',
-
-        crafting: profile.LifetimeStatistics?.Crafting?.Total
-          ? `${Math.round(profile.LifetimeStatistics.Crafting.Total / 1000000)}M`
-          : '0',
+        pvp: formatMillions(profile.KillFame),
+        pve: formatMillions(profile.LifetimeStatistics?.PvE?.Total),
+        gathering: formatMillions(profile.LifetimeStatistics?.Gathering?.All?.Total),
+        crafting: formatMillions(profile.LifetimeStatistics?.Crafting?.Total),
 
         infamy: '—',
         hellgate: '—',
@@ -80,55 +146,7 @@ export default function App() {
         kills: kills.length,
         deaths: deaths.length,
 
-        fights: [
-          ...kills.slice(0, 5).map((fight, index) => ({
-            id: `kill-${index}`,
-            type: 'kill',
-            opponent: fight.Victim?.Name || 'Inconnu',
-            fame: `${Math.round((fight.TotalVictimKillFame || 0) / 1000)}K`,
-            zone: fight.Location || 'Zone inconnue',
-            time: 'Récent',
-            weapon: fight.Killer?.Equipment?.MainHand?.Type || 'Inconnu',
-
-            killerInventory: Object.values(fight.Killer?.Equipment || {})
-              .filter(Boolean)
-              .map((item) => item.Type),
-
-            victimInventory: Object.values(fight.Victim?.Equipment || {})
-              .filter(Boolean)
-              .map((item) => item.Type),
-
-            assists:
-              fight.Participants
-                ?.filter((p) => p.Name !== fight.Killer?.Name)
-                .map((p) => p.Name)
-                .slice(0, 4) || [],
-          })),
-
-          ...deaths.slice(0, 5).map((fight, index) => ({
-            id: `death-${index}`,
-            type: 'death',
-            opponent: fight.Killer?.Name || 'Inconnu',
-            fame: `${Math.round((fight.TotalVictimKillFame || 0) / 1000)}K`,
-            zone: fight.Location || 'Zone inconnue',
-            time: 'Récent',
-            weapon: fight.Victim?.Equipment?.MainHand?.Type || 'Inconnu',
-
-            killerInventory: Object.values(fight.Killer?.Equipment || {})
-              .filter(Boolean)
-              .map((item) => item.Type),
-
-            victimInventory: Object.values(fight.Victim?.Equipment || {})
-              .filter(Boolean)
-              .map((item) => item.Type),
-
-            assists:
-              fight.Participants
-                ?.filter((p) => p.Name !== fight.Killer?.Name)
-                .map((p) => p.Name)
-                .slice(0, 4) || [],
-          })),
-        ],
+        fights,
       }
 
       setPlayer(formattedPlayer)
@@ -157,9 +175,13 @@ export default function App() {
         <Home onSearch={handleSearch} setPage={setPage} loading={loading} />
       )}
 
-      {page === 'profile' && player && <PlayerProfile player={player} />}
+      {page === 'profile' && player && (
+        <PlayerProfile player={player} />
+      )}
 
-      {page === 'guilds' && <Guilds guilds={GUILDS} />}
+      {page === 'guilds' && (
+        <Guilds guilds={GUILDS} />
+      )}
 
       {page === 'leaderboards' && (
         <Leaderboards leaderboards={LEADERBOARDS} />
