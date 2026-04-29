@@ -1,0 +1,41 @@
+.trackerPage {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+.trackerGrid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+}
+
+.profileCard {
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(10,16,32,.8);
+}
+
+.sideStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.sideStats div {
+  background: rgba(255,255,255,.05);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.matchRow {
+  border-left: 4px solid transparent;
+}
+
+.matchRow.kill {
+  border-left: 4px solid #28e98b;
+}
+
+.matchRow.death {
+  border-left: 4px solid #ff5f6d;
+}

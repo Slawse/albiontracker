@@ -1,14 +1,21 @@
 import { useState } from 'react'
+import '../styles/home.css'
+import WeaponCard from '../components/WeaponCard'
+
+const TOP_WEAPONS = [
+  { name: 'Bloodletter', type: 'Dagues', winrate: '59.4%', tier: 'S', content: 'Mists' },
+  { name: 'Dagger Pair', type: 'Dagues', winrate: '58.2%', tier: 'S', content: 'Corrupted' },
+  { name: 'Carving Sword', type: 'Épées', winrate: '55.1%', tier: 'A', content: 'Mists' },
+  { name: 'Cursed Staff', type: 'Bâton maudit', winrate: '54.7%', tier: 'A', content: 'Corrupted' },
+]
 
 export default function Home({ onSearch }) {
   const [query, setQuery] = useState('')
   const [focus, setFocus] = useState(false)
-  const [type, setType] = useState('player')
 
   function submit() {
-    if (type === 'player') {
-      onSearch(query)
-    }
+    if (!query.trim()) return
+    onSearch(query)
   }
 
   return (
@@ -19,18 +26,8 @@ export default function Home({ onSearch }) {
       </h1>
 
       <p className="subtitle">
-        STATISTIQUES · JOUEURS · GUILDES · MÉTA
+        RECHERCHE JOUEUR · STATS PVP · BUILDS · MÉTA
       </p>
-
-      <div className="switch">
-        <button onClick={() => setType('player')} className={type === 'player' ? 'selected' : ''}>
-          JOUEUR
-        </button>
-
-        <button onClick={() => setType('guild')} className={type === 'guild' ? 'selected' : ''}>
-          GUILDE
-        </button>
-      </div>
 
       <div className={`search ${focus ? 'focus' : ''}`}>
         <div className="searchIcon">⌕</div>
@@ -41,7 +38,7 @@ export default function Home({ onSearch }) {
           onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)}
           onKeyDown={(e) => e.key === 'Enter' && submit()}
-          placeholder={type === 'player' ? 'Essaie : slaw, xernon, chukak' : "Recherche guilde bientôt..."}
+          placeholder="Ex: slaw, xernon, chukak"
         />
 
         <button onClick={submit}>RECHERCHER →</button>
@@ -67,9 +64,22 @@ export default function Home({ onSearch }) {
         </div>
 
         <div className="stat">
-          <small>VERSION ACTUELLE</small>
+          <small>VERSION</small>
           <strong>PATCH 26.1</strong>
           <span>Live</span>
+        </div>
+      </section>
+
+      <section className="homeMetaPanel">
+        <div className="homeMetaHeader">
+          <h2>Meilleures armes du moment</h2>
+          <p>Armes dominantes selon le contenu et le taux de victoire.</p>
+        </div>
+
+        <div className="homeWeaponGrid">
+          {TOP_WEAPONS.map((weapon) => (
+            <WeaponCard key={weapon.name} weapon={weapon} />
+          ))}
         </div>
       </section>
     </main>

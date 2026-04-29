@@ -1,3 +1,5 @@
+import '../styles/tracker.css'
+
 export default function PlayerProfile({ player }) {
   if (!player) {
     return (
@@ -9,85 +11,115 @@ export default function PlayerProfile({ player }) {
   }
 
   const kd = (player.kills / Math.max(player.deaths, 1)).toFixed(2)
+  const winrate = Math.round((player.kills / Math.max(player.kills + player.deaths, 1)) * 100)
 
   return (
-    <main className="profilePage">
-      <section className="profileHero">
-        <div>
-          <div className="profileTag">{player.tag}</div>
-          <h1>{player.name}</h1>
-          <p>{player.guild}</p>
-        </div>
+    <main className="trackerPage">
+      <section className="trackerGrid">
+        <aside className="trackerSidebar">
+          <div className="profileCard">
+            <div className="profileAvatar">{player.name.slice(0, 2).toUpperCase()}</div>
+            <h1>{player.name}</h1>
+            <p>{player.guild}</p>
+            <span>{player.tag}</span>
+          </div>
 
-        <div className="profileKD">
-          <strong>{kd}</strong>
-          <span>KD Ratio</span>
-        </div>
-      </section>
+          <div className="rankCard">
+            <small>Rang PvP actuel</small>
+            <strong>Gold 3</strong>
+            <p>Top 12% des joueurs suivis</p>
+          </div>
 
-      <section className="profileStats">
-        <div><small>PvP Fame</small><strong>{player.pvp}</strong></div>
-        <div><small>PvE Fame</small><strong>{player.pve}</strong></div>
-        <div><small>Récolte</small><strong>{player.gathering}</strong></div>
-        <div><small>Fabrication</small><strong>{player.crafting}</strong></div>
-        <div><small>Infamie</small><strong>{player.infamy}</strong></div>
-        <div><small>Hellgate</small><strong>{player.hellgate}</strong></div>
-      </section>
+          <div className="sideStats">
+            <div><small>PvP</small><strong>{player.pvp}</strong></div>
+            <div><small>PvE</small><strong>{player.pve}</strong></div>
+            <div><small>Récolte</small><strong>{player.gathering}</strong></div>
+            <div><small>Fabrication</small><strong>{player.crafting}</strong></div>
+            <div><small>Infamie</small><strong>{player.infamy}</strong></div>
+            <div><small>Hellgate</small><strong>{player.hellgate}</strong></div>
+          </div>
+        </aside>
 
-      <section className="fightPanel">
-        <div className="fightHeader">
-          <h2>Activité récente</h2>
-          <p>Kills en vert, morts en rouge. Clique pour voir le détail.</p>
-        </div>
-
-        {player.fights.map((fight) => (
-          <details className={`fightRow ${fight.type}`} key={fight.id}>
-            <summary>
-              <div className="fightType">
-                {fight.type === 'kill' ? 'KILL' : 'MORT'}
-              </div>
-
-              <div>
-                <strong>
-                  {fight.type === 'kill' ? 'A tué' : 'Mort contre'} {fight.opponent}
-                </strong>
-                <span>{fight.weapon} · {fight.zone} · {fight.time}</span>
-              </div>
-
-              <div className="fightFame">{fight.fame}</div>
-              <div className="arrow">⌄</div>
-            </summary>
-
-            <div className="fightDetails">
-              <div className="inventoryBox killer">
-                <h3>Killer inventory</h3>
-                <div className="itemGrid">
-                  {fight.killerInventory.map((item) => (
-                    <div className="itemSlot" key={item}>{item}</div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="inventoryBox victim">
-                <h3>Victim inventory</h3>
-                <div className="itemGrid">
-                  {fight.victimInventory.map((item) => (
-                    <div className="itemSlot" key={item}>{item}</div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="assistBox">
-                <h3>Assists</h3>
-                {fight.assists.length > 0 ? (
-                  fight.assists.map((a) => <span key={a}>{a}</span>)
-                ) : (
-                  <p>Aucune assistance</p>
-                )}
-              </div>
+        <section className="trackerMain">
+          <div className="overviewBar">
+            <div className="circleStat">
+              <strong>{winrate}%</strong>
+              <span>Winrate</span>
             </div>
-          </details>
-        ))}
+
+            <div className="overviewNumbers">
+              <div><small>Kills</small><strong className="green">{player.kills}</strong></div>
+              <div><small>Morts</small><strong className="red">{player.deaths}</strong></div>
+              <div><small>KD</small><strong>{kd}</strong></div>
+            </div>
+          </div>
+
+          <div className="trackerSectionTitle">
+            <h2>Parties récentes</h2>
+            <p>Résultat, équipement, fame et détails du fight.</p>
+          </div>
+
+          <div className="matchList">
+            {player.fights.map((fight) => (
+              <details className={`matchRow ${fight.type}`} key={fight.id}>
+                <summary>
+                  <div className="matchResult">
+                    {fight.type === 'kill' ? 'Victoire' : 'Défaite'}
+                    <span>{fight.time}</span>
+                  </div>
+
+                  <div className="matchWeapon">
+                    <strong>{fight.weapon}</strong>
+                    <span>{fight.zone}</span>
+                  </div>
+
+                  <div className="matchScore">
+                    <strong className={fight.type === 'kill' ? 'green' : 'red'}>
+                      {fight.type === 'kill' ? '+' : '-'}{fight.fame}
+                    </strong>
+                    <span>Fame</span>
+                  </div>
+
+                  <div className="matchOpponent">
+                    <span>{fight.type === 'kill' ? 'Victime' : 'Tueur'}</span>
+                    <strong>{fight.opponent}</strong>
+                  </div>
+
+                  <div className="matchArrow">⌄</div>
+                </summary>
+
+                <div className="matchDetails">
+                  <div className="inventoryBox">
+                    <h3>Stuff du tueur</h3>
+                    <div className="itemGrid">
+                      {fight.killerInventory.map((item) => (
+                        <div className="itemSlot" key={item}>{item}</div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="inventoryBox">
+                    <h3>Stuff de la victime</h3>
+                    <div className="itemGrid">
+                      {fight.victimInventory.map((item) => (
+                        <div className="itemSlot" key={item}>{item}</div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="assistBox">
+                    <h3>Aides</h3>
+                    {fight.assists.length > 0 ? (
+                      fight.assists.map((a) => <span key={a}>{a}</span>)
+                    ) : (
+                      <p>Aucune aide</p>
+                    )}
+                  </div>
+                </div>
+              </details>
+            ))}
+          </div>
+        </section>
       </section>
     </main>
   )

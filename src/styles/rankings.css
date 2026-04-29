@@ -1,0 +1,100 @@
+.tierPage {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+.tierTop h1 {
+  font-size: 60px;
+  font-weight: 1000;
+}
+
+.tierTop p {
+  color: #8792a8;
+  margin-bottom: 20px;
+}
+
+/* SWITCH */
+.contentSwitch {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.contentSwitch button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 0;
+  background: rgba(255,255,255,.05);
+  color: white;
+  cursor: pointer;
+}
+
+.activeContent {
+  background: #7c6af0 !important;
+}
+
+/* LAYOUT */
+.tierLayout {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 20px;
+}
+
+/* TIERS */
+.tierBlock {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.tierLabel {
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  font-weight: 1000;
+}
+
+.tierS { background: #e02b2b; }
+.tierA { background: #ff8b2c; }
+.tierB { background: #f2df31; }
+.tierC { background: #31d071; }
+
+.tierWeapons {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  flex-wrap: wrap;
+}
+
+.weaponChip {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.06);
+  cursor: pointer;
+}
+
+.weaponChip:hover {
+  background: rgba(124,106,240,.3);
+}
+
+/* BUILD */
+.buildPanel {
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(10,16,32,.8);
+}
+
+.buildGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.buildItem {
+  padding: 10px;
+  background: rgba(255,255,255,.05);
+  border-radius: 10px;
+}

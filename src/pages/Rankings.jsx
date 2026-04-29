@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import '../styles/rankings.css'
 
 export default function Rankings({ contents, weaponTiers }) {
   const [contentMode, setContentMode] = useState('Mists')

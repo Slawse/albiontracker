@@ -831,3 +831,501 @@ button, input { font-family: inherit; }
     display: none;
   }
 }
+  .homeMetaPanel {
+  margin-top: 34px;
+  padding: 24px;
+  border-radius: 24px;
+  background: rgba(10,16,32,.76);
+  border: 1px solid rgba(255,255,255,.11);
+  box-shadow: 0 24px 70px rgba(0,0,0,.32);
+  text-align: left;
+}
+
+.homeMetaHeader h2 {
+  margin: 0;
+  color: #9cc7ff;
+  font-size: 28px;
+  font-weight: 1000;
+}
+
+.homeMetaHeader p {
+  margin: 6px 0 20px;
+  color: #8792a8;
+  font-weight: 800;
+}
+
+.homeWeaponGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.homeWeaponCard {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.09);
+  display: grid;
+  grid-template-columns: 46px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  transition: .2s ease;
+}
+
+.homeWeaponCard:hover {
+  transform: translateY(-4px);
+  border-color: rgba(139,92,246,.6);
+  background: rgba(124,106,240,.08);
+}
+
+.homeTier {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  font-weight: 1000;
+}
+
+.homeWeaponCard strong {
+  display: block;
+  font-size: 15px;
+}
+
+.homeWeaponCard span {
+  display: block;
+  margin-top: 4px;
+  color: #8792a8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.homeWeaponCard b {
+  color: #28e98b;
+}
+
+/* TRACKER PLAYER */
+
+.trackerPage {
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 34px 42px 80px;
+}
+
+.trackerGrid {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  gap: 22px;
+}
+
+.trackerSidebar,
+.trackerMain {
+  min-width: 0;
+}
+
+.profileCard,
+.rankCard,
+.sideStats,
+.overviewBar,
+.matchRow {
+  background: rgba(10,16,32,.78);
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: 0 18px 48px rgba(0,0,0,.28);
+}
+
+.profileCard {
+  padding: 24px;
+  border-radius: 22px;
+  text-align: center;
+}
+
+.profileAvatar {
+  width: 86px;
+  height: 86px;
+  margin: 0 auto 14px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  background: rgba(124,106,240,.18);
+  border: 1px solid rgba(139,92,246,.45);
+  color: #a78bfa;
+  font-size: 26px;
+  font-weight: 1000;
+}
+
+.profileCard h1 {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 1000;
+}
+
+.profileCard p {
+  margin: 7px 0;
+  color: #8792a8;
+  font-weight: 800;
+}
+
+.profileCard span {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 9px;
+  color: #ffbd2e;
+  background: rgba(255,189,46,.1);
+  border: 1px solid rgba(255,189,46,.35);
+  font-weight: 1000;
+}
+
+.rankCard {
+  margin-top: 14px;
+  padding: 18px;
+  border-radius: 18px;
+}
+
+.rankCard small,
+.sideStats small,
+.overviewNumbers small {
+  display: block;
+  color: #8792a8;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 950;
+}
+
+.rankCard strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 28px;
+  font-weight: 1000;
+}
+
+.rankCard p {
+  margin: 6px 0 0;
+  color: #8792a8;
+  font-weight: 800;
+}
+
+.sideStats {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.sideStats div {
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.045);
+}
+
+.sideStats strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 18px;
+  font-weight: 1000;
+}
+
+.overviewBar {
+  padding: 20px;
+  border-radius: 22px;
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 18px;
+  align-items: center;
+}
+
+.circleStat {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background:
+    radial-gradient(circle at center, #10192d 54%, transparent 55%),
+    conic-gradient(#28e98b 0 65%, #ff5f6d 65% 100%);
+}
+
+.circleStat strong {
+  font-size: 28px;
+  font-weight: 1000;
+}
+
+.circleStat span {
+  color: #8792a8;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.overviewNumbers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.overviewNumbers div {
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.045);
+}
+
+.overviewNumbers strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 28px;
+  font-weight: 1000;
+}
+
+.trackerSectionTitle {
+  margin: 24px 0 14px;
+}
+
+.trackerSectionTitle h2 {
+  margin: 0;
+  color: #9cc7ff;
+  font-size: 26px;
+  font-weight: 1000;
+}
+
+.trackerSectionTitle p {
+  margin: 5px 0 0;
+  color: #8792a8;
+  font-weight: 800;
+}
+
+.matchList {
+  display: grid;
+  gap: 10px;
+}
+
+.matchRow {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.matchRow.kill {
+  border-left: 5px solid #28e98b;
+}
+
+.matchRow.death {
+  border-left: 5px solid #ff5f6d;
+}
+
+.matchRow summary {
+  list-style: none;
+  cursor: pointer;
+  min-height: 78px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 90px 1.4fr 110px 130px 40px;
+  align-items: center;
+  gap: 14px;
+}
+
+.matchRow summary::-webkit-details-marker {
+  display: none;
+}
+
+.matchResult {
+  font-size: 13px;
+  font-weight: 1000;
+}
+
+.matchRow.kill .matchResult {
+  color: #28e98b;
+}
+
+.matchRow.death .matchResult {
+  color: #ff5f6d;
+}
+
+.matchResult span,
+.matchWeapon span,
+.matchOpponent span,
+.matchScore span {
+  display: block;
+  margin-top: 4px;
+  color: #8792a8;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.matchWeapon strong,
+.matchOpponent strong,
+.matchScore strong {
+  display: block;
+  font-weight: 1000;
+}
+
+.matchArrow {
+  justify-self: end;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(124,106,240,.18);
+  color: #cfc6ff;
+  transition: .2s ease;
+}
+
+.matchRow[open] .matchArrow {
+  transform: rotate(180deg);
+}
+
+.matchDetails {
+  padding: 0 16px 16px 106px;
+  display: grid;
+  grid-template-columns: 1fr 1fr .7fr;
+  gap: 12px;
+}
+
+.inventoryBox,
+.assistBox {
+  padding: 15px;
+  border-radius: 15px;
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.inventoryBox h3,
+.assistBox h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: #9cc7ff;
+}
+
+.itemGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.itemSlot {
+  min-height: 42px;
+  padding: 10px;
+  border-radius: 11px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.08);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.assistBox span {
+  display: inline-block;
+  margin: 4px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  background: rgba(124,106,240,.18);
+  color: #d8d0ff;
+  font-weight: 900;
+}
+
+.assistBox p {
+  color: #8792a8;
+  font-weight: 800;
+}
+
+@media (max-width: 950px) {
+  .homeWeaponGrid,
+  .trackerGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .overviewBar {
+    grid-template-columns: 1fr;
+  }
+
+  .overviewNumbers {
+    grid-template-columns: 1fr;
+  }
+
+  .matchRow summary {
+    grid-template-columns: 80px 1fr 40px;
+  }
+
+  .matchScore,
+  .matchOpponent {
+    display: none;
+  }
+
+  .matchDetails {
+    padding-left: 16px;
+    grid-template-columns: 1fr;
+  }
+
+}
+/* FIX FORCED HOME WEAPONS */
+
+.homeMetaPanel {
+  margin: 34px auto 0 !important;
+  max-width: 1200px !important;
+  padding: 24px !important;
+  border-radius: 24px !important;
+  background: rgba(10,16,32,.76) !important;
+  border: 1px solid rgba(255,255,255,.11) !important;
+  box-shadow: 0 24px 70px rgba(0,0,0,.32) !important;
+  text-align: left !important;
+}
+
+.homeMetaHeader h2 {
+  margin: 0 !important;
+  color: #9cc7ff !important;
+  font-size: 28px !important;
+  font-weight: 1000 !important;
+}
+
+.homeMetaHeader p {
+  margin: 6px 0 20px !important;
+  color: #8792a8 !important;
+  font-weight: 800 !important;
+}
+
+.homeWeaponGrid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 14px !important;
+}
+
+.homeWeaponCard {
+  padding: 18px !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,.045) !important;
+  border: 1px solid rgba(255,255,255,.09) !important;
+  display: grid !important;
+  grid-template-columns: 46px 1fr auto !important;
+  align-items: center !important;
+  gap: 14px !important;
+  text-align: left !important;
+}
+
+.homeTier {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 13px !important;
+  display: grid !important;
+  place-items: center !important;
+  font-weight: 1000 !important;
+  background: rgba(255,189,46,.14) !important;
+  color: #ffbd2e !important;
+}
+
+.homeWeaponCard strong {
+  display: block !important;
+  font-size: 15px !important;
+}
+
+.homeWeaponCard span {
+  display: block !important;
+  margin-top: 4px !important;
+  color: #8792a8 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+.homeWeaponCard b {
+  color: #28e98b !important;
+}
