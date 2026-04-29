@@ -572,3 +572,32 @@
   font-size: 12px;
   font-weight: 900;
 }
+.weaponWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.weaponWithIcon img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+.itemSlotImage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.itemSlotImage img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.itemSlotImage span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

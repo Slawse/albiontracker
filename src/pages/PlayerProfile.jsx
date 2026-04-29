@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import '../styles/tracker.css'
+import { getItemImage, cleanItemName } from '../utils/items'
 
 export default function PlayerProfile({ player }) {
   const [tab, setTab] = useState('overview')
@@ -20,7 +21,6 @@ export default function PlayerProfile({ player }) {
   return (
     <main className="trackerPage">
       <section className="trackerGrid">
-
         <aside className="trackerSidebar">
           <div className="profileCard">
             <div className="profileAvatar">{player.name.slice(0, 2).toUpperCase()}</div>
@@ -47,6 +47,7 @@ export default function PlayerProfile({ player }) {
               <div className="weaponPerfRow" key={w.weapon}>
                 <div className="weaponPerfName">
                   <div className={`weaponMini perfTier${w.tier}`}>{w.tier}</div>
+
                   <div>
                     <strong>{w.weapon}</strong>
                     <small>{w.mode}</small>
@@ -86,10 +87,17 @@ export default function PlayerProfile({ player }) {
           </div>
 
           <div className="profileTabs">
-            <button onClick={() => setTab('overview')} className={tab === 'overview' ? 'activeTab' : ''}>
+            <button
+              onClick={() => setTab('overview')}
+              className={tab === 'overview' ? 'activeTab' : ''}
+            >
               Aperçu
             </button>
-            <button onClick={() => setTab('stats')} className={tab === 'stats' ? 'activeTab' : ''}>
+
+            <button
+              onClick={() => setTab('stats')}
+              className={tab === 'stats' ? 'activeTab' : ''}
+            >
               Stats
             </button>
           </div>
@@ -102,7 +110,7 @@ export default function PlayerProfile({ player }) {
               </div>
 
               <div className="matchList">
-                {player.fights.map((fight) => (
+                {player.fights?.map((fight) => (
                   <details className={`matchRow ${fight.type}`} key={fight.id}>
                     <summary>
                       <div className="matchResult">
@@ -110,9 +118,18 @@ export default function PlayerProfile({ player }) {
                         <span>{fight.time}</span>
                       </div>
 
-                      <div className="matchWeapon">
-                        <strong>{fight.weapon}</strong>
-                        <span>{fight.zone}</span>
+                      <div className="matchWeapon weaponWithIcon">
+                        {fight.weapon && fight.weapon !== 'Inconnu' && (
+                          <img
+                            src={getItemImage(fight.weapon)}
+                            alt={cleanItemName(fight.weapon)}
+                          />
+                        )}
+
+                        <div>
+                          <strong>{cleanItemName(fight.weapon)}</strong>
+                          <span>{fight.zone}</span>
+                        </div>
                       </div>
 
                       <div className="matchScore">
@@ -133,25 +150,40 @@ export default function PlayerProfile({ player }) {
                     <div className="matchDetails">
                       <div className="inventoryBox">
                         <h3>Stuff du tueur</h3>
+
                         <div className="itemGrid">
-                          {fight.killerInventory.map((item) => (
-                            <div className="itemSlot" key={item}>{item}</div>
+                          {fight.killerInventory?.map((item) => (
+                            <div className="itemSlot itemSlotImage" key={item}>
+                              <img
+                                src={getItemImage(item)}
+                                alt={cleanItemName(item)}
+                              />
+                              <span>{cleanItemName(item)}</span>
+                            </div>
                           ))}
                         </div>
                       </div>
 
                       <div className="inventoryBox">
                         <h3>Stuff de la victime</h3>
+
                         <div className="itemGrid">
-                          {fight.victimInventory.map((item) => (
-                            <div className="itemSlot" key={item}>{item}</div>
+                          {fight.victimInventory?.map((item) => (
+                            <div className="itemSlot itemSlotImage" key={item}>
+                              <img
+                                src={getItemImage(item)}
+                                alt={cleanItemName(item)}
+                              />
+                              <span>{cleanItemName(item)}</span>
+                            </div>
                           ))}
                         </div>
                       </div>
 
                       <div className="assistBox">
                         <h3>Aides</h3>
-                        {fight.assists.length > 0 ? (
+
+                        {fight.assists?.length > 0 ? (
                           fight.assists.map((a) => <span key={a}>{a}</span>)
                         ) : (
                           <p>Aucune aide</p>
@@ -195,7 +227,6 @@ export default function PlayerProfile({ player }) {
             </section>
           )}
         </section>
-
       </section>
     </main>
   )
