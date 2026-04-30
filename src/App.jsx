@@ -22,6 +22,8 @@ import {
   getPlayerDeaths,
 } from './api/albionApi'
 
+const EVENTS_LIMIT = 50
+
 function formatFame(value) {
   return `${Math.round((value || 0) / 1000)}K`
 }
@@ -49,6 +51,45 @@ function getInventory(equipment) {
     .map((item) => item.Type)
 }
 
+function normalize(value) {
+  return String(value || '').toLowerCase().trim()
+}
+
+function formatEventForPlayer(event, playerId, playerName, index) {
+  const killerId = event.Killer?.Id
+  const victimId = event.Victim?.Id
+  const killerName = normalize(event.Killer?.Name)
+  const victimName = normalize(event.Victim?.Name)
+  const searchedName = normalize(playerName)
+
+  const isKill = killerId === playerId || killerName === searchedName
+  const isDeath = victimId === playerId || victimName === searchedName
+
+  if (!isKill && !isDeath) return null
+
+  return {
+    id: `event-${event.EventId || index}`,
+    type: isKill ? 'kill' : 'death',
+    opponent: isKill
+      ? event.Victim?.Name || 'Inconnu'
+      : event.Killer?.Name || 'Inconnu',
+    fame: formatFame(event.TotalVictimKillFame),
+    zone: event.Location || 'Zone inconnue',
+    time: formatFightDate(event.TimeStamp),
+    rawDate: event.TimeStamp ? new Date(event.TimeStamp).getTime() : 0,
+    weapon: isKill
+      ? event.Killer?.Equipment?.MainHand?.Type || 'Inconnu'
+      : event.Victim?.Equipment?.MainHand?.Type || 'Inconnu',
+    killerInventory: getInventory(event.Killer?.Equipment),
+    victimInventory: getInventory(event.Victim?.Equipment),
+    assists:
+      event.Participants
+        ?.filter((p) => normalize(p.Name) !== normalize(event.Killer?.Name))
+        .map((p) => p.Name)
+        .slice(0, 4) || [],
+  }
+}
+
 function formatKillFight(fight, index) {
   return {
     id: `kill-${fight.EventId || index}`,
@@ -59,13 +100,11 @@ function formatKillFight(fight, index) {
     time: formatFightDate(fight.TimeStamp),
     rawDate: fight.TimeStamp ? new Date(fight.TimeStamp).getTime() : 0,
     weapon: fight.Killer?.Equipment?.MainHand?.Type || 'Inconnu',
-
     killerInventory: getInventory(fight.Killer?.Equipment),
     victimInventory: getInventory(fight.Victim?.Equipment),
-
     assists:
       fight.Participants
-        ?.filter((p) => p.Name !== fight.Killer?.Name)
+        ?.filter((p) => normalize(p.Name) !== normalize(fight.Killer?.Name))
         .map((p) => p.Name)
         .slice(0, 4) || [],
   }
@@ -81,16 +120,67 @@ function formatDeathFight(fight, index) {
     time: formatFightDate(fight.TimeStamp),
     rawDate: fight.TimeStamp ? new Date(fight.TimeStamp).getTime() : 0,
     weapon: fight.Victim?.Equipment?.MainHand?.Type || 'Inconnu',
-
     killerInventory: getInventory(fight.Killer?.Equipment),
     victimInventory: getInventory(fight.Victim?.Equipment),
-
     assists:
       fight.Participants
-        ?.filter((p) => p.Name !== fight.Killer?.Name)
+        ?.filter((p) => normalize(p.Name) !== normalize(fight.Killer?.Name))
         .map((p) => p.Name)
         .slice(0, 4) || [],
   }
+}
+
+function cleanFights(fights, limit = EVENTS_LIMIT) {
+  const map = new Map()
+
+  fights.filter(Boolean).forEach((fight) => {
+    map.set(fight.id, fight)
+  })
+
+  return [...map.values()]
+    .sort((a, b) => b.rawDate - a.rawDate)
+    .slice(0, limit)
+}
+
+async function forcePlayerEvents(playerId) {
+  try {
+    await fetch(`http://localhost:3001/force-player?id=${playerId}`)
+  } catch (error) {
+    console.warn('force-player ignoré:', error)
+  }
+}
+
+async function getStoredPlayerEvents(playerId, playerName) {
+  try {
+    const res = await fetch(
+      `http://localhost:3001/player-events?id=${playerId}&name=${encodeURIComponent(playerName)}&limit=${EVENTS_LIMIT}`
+    )
+
+    if (!res.ok) return []
+
+    const events = await res.json()
+
+    return cleanFights(
+      events.map((event, index) =>
+        formatEventForPlayer(event, playerId, playerName, index)
+      )
+    )
+  } catch (error) {
+    console.warn('player-events ignoré:', error)
+    return []
+  }
+}
+
+async function getFallbackEvents(playerId) {
+  const [kills, deaths] = await Promise.all([
+    getPlayerKills(playerId, EVENTS_LIMIT),
+    getPlayerDeaths(playerId, EVENTS_LIMIT),
+  ])
+
+  return cleanFights([
+    ...kills.map(formatKillFight),
+    ...deaths.map(formatDeathFight),
+  ])
 }
 
 export default function App() {
@@ -121,21 +211,25 @@ export default function App() {
       }
 
       const profile = await getPlayerProfile(found.Id)
-      const kills = await getPlayerKills(found.Id)
-      const deaths = await getPlayerDeaths(found.Id)
+      const playerName = profile.Name || found.Name
 
-      const fights = [
-        ...kills.map(formatKillFight),
-        ...deaths.map(formatDeathFight),
-      ]
-        .sort((a, b) => b.rawDate - a.rawDate)
+      await forcePlayerEvents(found.Id)
+
+      let fights = await getStoredPlayerEvents(found.Id, playerName)
+
+      if (fights.length === 0) {
+        fights = await getFallbackEvents(found.Id)
+      }
+
+      const killsCount = fights.filter((fight) => fight.type === 'kill').length
+      const deathsCount = fights.filter((fight) => fight.type === 'death').length
 
       const formattedPlayer = {
-        name: profile.Name || found.Name,
-        guild: profile.GuildName || 'Sans guilde',
+        name: playerName,
+        guild: profile.GuildName || found.GuildName || 'Sans guilde',
         tag: profile.GuildTag || '---',
 
-        pvp: formatMillions(profile.KillFame),
+        pvp: formatMillions(profile.KillFame || found.KillFame),
         pve: formatMillions(profile.LifetimeStatistics?.PvE?.Total),
         gathering: formatMillions(profile.LifetimeStatistics?.Gathering?.All?.Total),
         crafting: formatMillions(profile.LifetimeStatistics?.Crafting?.Total),
@@ -143,8 +237,8 @@ export default function App() {
         infamy: '—',
         hellgate: '—',
 
-        kills: kills.length,
-        deaths: deaths.length,
+        kills: killsCount,
+        deaths: deathsCount,
 
         fights,
       }

@@ -8,7 +8,6 @@ export async function searchPlayerByName(name) {
   }
 
   const data = await res.json()
-
   return data.players?.[0] || null
 }
 
@@ -22,8 +21,8 @@ export async function getPlayerProfile(id) {
   return res.json()
 }
 
-export async function getPlayerKills(id) {
-  const res = await fetch(`${BASE_URL}/kills/${id}`)
+export async function getPlayerKills(id, limit = 50) {
+  const res = await fetch(`${BASE_URL}/kills/${id}?limit=${limit}`)
 
   if (!res.ok) {
     throw new Error('Erreur kills proxy')
@@ -32,11 +31,21 @@ export async function getPlayerKills(id) {
   return res.json()
 }
 
-export async function getPlayerDeaths(id) {
-  const res = await fetch(`${BASE_URL}/deaths/${id}`)
+export async function getPlayerDeaths(id, limit = 50) {
+  const res = await fetch(`${BASE_URL}/deaths/${id}?limit=${limit}`)
 
   if (!res.ok) {
     throw new Error('Erreur deaths proxy')
+  }
+
+  return res.json()
+}
+
+export async function getRecentEvents(limit = 50, offset = 0) {
+  const res = await fetch(`${BASE_URL}/events?limit=${limit}&offset=${offset}`)
+
+  if (!res.ok) {
+    throw new Error('Erreur events proxy')
   }
 
   return res.json()
