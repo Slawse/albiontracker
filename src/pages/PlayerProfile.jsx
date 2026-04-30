@@ -2,6 +2,8 @@ import { useState } from 'react'
 import '../styles/tracker.css'
 import { getItemImage, cleanItemName } from '../utils/items'
 
+const FIGHTS_PER_PAGE = 10
+
 function getWeaponStatsFromFights(fights = []) {
   const weapons = {}
 
@@ -9,11 +11,7 @@ function getWeaponStatsFromFights(fights = []) {
     const weapon = fight.weapon || 'Inconnu'
 
     if (!weapons[weapon]) {
-      weapons[weapon] = {
-        weapon,
-        kills: 0,
-        deaths: 0,
-      }
+      weapons[weapon] = { weapon, kills: 0, deaths: 0 }
     }
 
     if (fight.type === 'kill') weapons[weapon].kills += 1
@@ -34,20 +32,138 @@ function getWeaponStatsFromFights(fights = []) {
     .sort((a, b) => b.total - a.total)
 }
 
+function GearGrid({ title, items = [], emptyText = 'Aucun item', note = '' }) {
+  return (
+    <div className="inventoryBox gearBox">
+      <div className="gearBoxTop">
+        <h3>{title}</h3>
+        {note && <span>{note}</span>}
+      </div>
+
+      <div className="gearGrid">
+        {items.length > 0 ? (
+          items.map((item, index) => (
+            <div
+              className="gearSlot"
+              key={`${item}-${index}`}
+              title={cleanItemName(item)}
+            >
+              <img src={getItemImage(item)} alt={cleanItemName(item)} />
+            </div>
+          ))
+        ) : (
+          <p className="emptyGear">{emptyText}</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function FightDetails({ fight }) {
+  const [viewMode, setViewMode] = useState('compare')
+
+  const victimInventory = fight.victimBag || []
+
+  return (
+    <div className="fightDetailsWrap">
+      <div className="detailsToolbar">
+        <div className="detailsViewTabs">
+          <button
+            type="button"
+            onClick={() => setViewMode('compare')}
+            className={viewMode === 'compare' ? 'activeDetailsTab' : ''}
+          >
+            Comparer
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setViewMode('inventory')}
+            className={viewMode === 'inventory' ? 'activeDetailsTab' : ''}
+          >
+            Inventaire
+          </button>
+        </div>
+      </div>
+
+      {viewMode === 'compare' && (
+        <div className="matchDetails gearDetails">
+          <GearGrid
+            title="Stuff du tueur"
+            items={fight.killerInventory || []}
+            emptyText="Aucun stuff"
+          />
+
+          <GearGrid
+            title="Stuff de la victime"
+            items={fight.victimInventory || []}
+            emptyText="Aucun stuff"
+          />
+
+          <div className="assistBox">
+            <h3>Aides</h3>
+
+            {fight.assists?.length > 0 ? (
+              fight.assists.map((assist) => (
+                <span key={`${fight.id}-${assist}`}>{assist}</span>
+              ))
+            ) : (
+              <p>Aucune aide</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'inventory' && (
+        <div className="inventoryMode">
+          <GearGrid
+            title="Inventaire de la victime"
+            items={victimInventory}
+            emptyText="Inventaire indisponible"
+            note={victimInventory.length === 0 ? 'Indisponible' : ''}
+          />
+
+          <div className="assistBox inventoryAssistBox">
+            <h3>Aides</h3>
+
+            {fight.assists?.length > 0 ? (
+              fight.assists.map((assist) => (
+                <span key={`${fight.id}-inventory-${assist}`}>{assist}</span>
+              ))
+            ) : (
+              <p>Aucune aide</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function PlayerProfile({ player }) {
   const [tab, setTab] = useState('overview')
-  const [visibleFights, setVisibleFights] = useState(10)
+  const [currentPage, setCurrentPage] = useState(1)
 
   if (!player) return null
+
+  const fights = player.fights || []
+  const weaponStats = getWeaponStatsFromFights(fights)
 
   const kd = (player.kills / Math.max(player.deaths, 1)).toFixed(2)
   const winrate = Math.round(
     (player.kills / Math.max(player.kills + player.deaths, 1)) * 100
   )
 
-  const fights = player.fights || []
-  const weaponStats = getWeaponStatsFromFights(fights)
-  const visibleFightList = fights.slice(0, visibleFights)
+  const totalPages = Math.ceil(fights.length / FIGHTS_PER_PAGE)
+  const startIndex = (currentPage - 1) * FIGHTS_PER_PAGE
+  const visibleFightList = fights.slice(startIndex, startIndex + FIGHTS_PER_PAGE)
+
+  function goToPage(page) {
+    if (page < 1 || page > totalPages) return
+
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <main className="trackerPage">
@@ -105,12 +221,35 @@ export default function PlayerProfile({ player }) {
           </div>
 
           <div className="sideStats">
-            <div><small>PvP</small><strong>{player.pvp}</strong></div>
-            <div><small>PvE</small><strong>{player.pve}</strong></div>
-            <div><small>Récolte</small><strong>{player.gathering}</strong></div>
-            <div><small>Fabrication</small><strong>{player.crafting}</strong></div>
-            <div><small>Infamie</small><strong>{player.infamy}</strong></div>
-            <div><small>Hellgate</small><strong>{player.hellgate}</strong></div>
+            <div>
+              <small>PvP</small>
+              <strong>{player.pvp}</strong>
+            </div>
+
+            <div>
+              <small>PvE</small>
+              <strong>{player.pve}</strong>
+            </div>
+
+            <div>
+              <small>Récolte</small>
+              <strong>{player.gathering}</strong>
+            </div>
+
+            <div>
+              <small>Fabrication</small>
+              <strong>{player.crafting}</strong>
+            </div>
+
+            <div>
+              <small>Infamie</small>
+              <strong>{player.infamy}</strong>
+            </div>
+
+            <div>
+              <small>Hellgate</small>
+              <strong>{player.hellgate}</strong>
+            </div>
           </div>
         </aside>
 
@@ -122,14 +261,26 @@ export default function PlayerProfile({ player }) {
             </div>
 
             <div className="overviewNumbers">
-              <div><small>Kills</small><strong className="green">{player.kills}</strong></div>
-              <div><small>Morts</small><strong className="red">{player.deaths}</strong></div>
-              <div><small>KD</small><strong>{kd}</strong></div>
+              <div>
+                <small>Kills</small>
+                <strong className="green">{player.kills}</strong>
+              </div>
+
+              <div>
+                <small>Morts</small>
+                <strong className="red">{player.deaths}</strong>
+              </div>
+
+              <div>
+                <small>KD</small>
+                <strong>{kd}</strong>
+              </div>
             </div>
           </div>
 
           <div className="profileTabs">
             <button
+              type="button"
               onClick={() => setTab('overview')}
               className={tab === 'overview' ? 'activeTab' : ''}
             >
@@ -137,6 +288,7 @@ export default function PlayerProfile({ player }) {
             </button>
 
             <button
+              type="button"
               onClick={() => setTab('stats')}
               className={tab === 'stats' ? 'activeTab' : ''}
             >
@@ -148,7 +300,10 @@ export default function PlayerProfile({ player }) {
             <>
               <div className="trackerSectionTitle">
                 <h2>Parties récentes</h2>
-                <p>Résultat, équipement, fame et détails du fight.</p>
+                <p>
+                  Résultat, équipement, fame et détails du fight.
+                  {totalPages > 1 && ` Page ${currentPage}/${totalPages}`}
+                </p>
               </div>
 
               <div className="matchList">
@@ -174,6 +329,11 @@ export default function PlayerProfile({ player }) {
                         </div>
                       </div>
 
+                      <div className="matchAssists">
+                        <span className="assistIcon">👥</span>
+                        <strong>+{fight.assists?.length || 0}</strong>
+                      </div>
+
                       <div className="matchScore">
                         <strong className={fight.type === 'kill' ? 'green' : 'red'}>
                           {fight.type === 'kill' ? '+' : '-'}{fight.fame}
@@ -189,93 +349,70 @@ export default function PlayerProfile({ player }) {
                       <div className="matchArrow">⌄</div>
                     </summary>
 
-                    <div className="matchDetails">
-                      <div className="inventoryBox">
-                        <h3>Stuff du tueur</h3>
-
-                        <div className="itemGrid">
-                          {fight.killerInventory?.map((item) => (
-                            <div className="itemSlot itemSlotImage" key={`${fight.id}-killer-${item}`}>
-                              <img
-                                src={getItemImage(item)}
-                                alt={cleanItemName(item)}
-                              />
-                              <span>{cleanItemName(item)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="inventoryBox">
-                        <h3>Stuff de la victime</h3>
-
-                        <div className="itemGrid">
-                          {fight.victimInventory?.map((item) => (
-                            <div className="itemSlot itemSlotImage" key={`${fight.id}-victim-${item}`}>
-                              <img
-                                src={getItemImage(item)}
-                                alt={cleanItemName(item)}
-                              />
-                              <span>{cleanItemName(item)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="assistBox">
-                        <h3>Aides</h3>
-
-                        {fight.assists?.length > 0 ? (
-                          fight.assists.map((assist) => (
-                            <span key={`${fight.id}-${assist}`}>{assist}</span>
-                          ))
-                        ) : (
-                          <p>Aucune aide</p>
-                        )}
-                      </div>
-                    </div>
+                    <FightDetails fight={fight} />
                   </details>
                 ))}
               </div>
 
-              {visibleFights < fights.length && (
-                <button
-                  className="loadMoreBtn"
-                  onClick={() => setVisibleFights((value) => value + 10)}
-                >
-                  Voir plus
-                </button>
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button
+                    type="button"
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    ←
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, index) => {
+                    const page = index + 1
+
+                    return (
+                      <button
+                        type="button"
+                        key={page}
+                        onClick={() => goToPage(page)}
+                        className={currentPage === page ? 'activePage' : ''}
+                      >
+                        {page}
+                      </button>
+                    )
+                  })}
+
+                  <button
+                    type="button"
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    →
+                  </button>
+                </div>
               )}
             </>
           )}
 
           {tab === 'stats' && (
             <section className="statOverview">
-              <div className="radarCard">
-                <div className="miniTitle">Performance overview</div>
-
-                <div className="radarWrap">
-                  <svg className="radar" viewBox="0 0 300 300">
-                    <polygon className="radarGrid" points="150,25 270,95 240,235 60,235 30,95" />
-                    <polygon className="radarGrid small" points="150,70 225,112 205,205 95,205 75,112" />
-                    <polygon className="radarShape" points="150,45 245,105 215,215 75,220 60,110" />
-
-                    <text x="150" y="18">PvP</text>
-                    <text x="285" y="98">PvE</text>
-                    <text x="245" y="260">Récolte</text>
-                    <text x="55" y="260">Craft</text>
-                    <text x="15" y="98">KD</text>
-                  </svg>
-                </div>
-              </div>
-
               <div className="perfCards">
-                <div><strong className="green">{player.kills}</strong><span>Kills total</span></div>
-                <div><strong className="red">{player.deaths}</strong><span>Morts total</span></div>
-                <div><strong>{kd}</strong><span>KD ratio</span></div>
-                <div><strong>{winrate}%</strong><span>Winrate</span></div>
-                <div><strong>{player.infamy}</strong><span>Infamie</span></div>
-                <div><strong>{player.hellgate}</strong><span>Hellgate</span></div>
+                <div>
+                  <strong className="green">{player.kills}</strong>
+                  <span>Kills</span>
+                </div>
+
+                <div>
+                  <strong className="red">{player.deaths}</strong>
+                  <span>Morts</span>
+                </div>
+
+                <div>
+                  <strong>{kd}</strong>
+                  <span>KD</span>
+                </div>
+
+                <div>
+                  <strong>{winrate}%</strong>
+                  <span>WR</span>
+                </div>
               </div>
             </section>
           )}

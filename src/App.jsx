@@ -23,6 +23,7 @@ import {
 } from './api/albionApi'
 
 const EVENTS_LIMIT = 50
+const API_URL = 'http://localhost:3001'
 
 function formatFame(value) {
   return `${Math.round((value || 0) / 1000)}K`
@@ -45,14 +46,71 @@ function formatFightDate(timestamp) {
   })
 }
 
-function getInventory(equipment) {
-  return Object.values(equipment || {})
+function normalize(value) {
+  return String(value || '').toLowerCase().trim()
+}
+
+function getEquipmentItems(equipment = {}) {
+  const slots = [
+    equipment.Bag,
+    equipment.Head,
+    equipment.Cape,
+    equipment.MainHand,
+    equipment.Armor,
+    equipment.OffHand,
+    equipment.Potion,
+    equipment.Shoes,
+    equipment.Food,
+    equipment.Mount,
+  ]
+
+  return slots
     .filter(Boolean)
     .map((item) => item.Type)
 }
 
-function normalize(value) {
-  return String(value || '').toLowerCase().trim()
+function getBagItems(inventory = []) {
+  return inventory
+    .filter(Boolean)
+    .map((item) => item.Type)
+}
+
+function getContentType(event = {}) {
+  const location = normalize(event.Location)
+  if (!location) return 'PvP'
+  return location
+}
+
+function makeFight(event, type, index) {
+  const isKill = type === 'kill'
+
+  return {
+    id: `${type}-${event.EventId || index}`,
+    type,
+    opponent: isKill
+      ? event.Victim?.Name || 'Inconnu'
+      : event.Killer?.Name || 'Inconnu',
+    fame: formatFame(event.TotalVictimKillFame),
+    zone: getContentType(event),
+    mapName: event.Location || 'Map inconnue',
+    time: formatFightDate(event.TimeStamp),
+    rawDate: event.TimeStamp ? new Date(event.TimeStamp).getTime() : 0,
+    weapon: isKill
+      ? event.Killer?.Equipment?.MainHand?.Type || 'Inconnu'
+      : event.Victim?.Equipment?.MainHand?.Type || 'Inconnu',
+
+    killerInventory: getEquipmentItems(event.Killer?.Equipment),
+    victimInventory: getEquipmentItems(event.Victim?.Equipment),
+
+    killerBag: getBagItems(event.Killer?.Inventory),
+    victimBag: getBagItems(event.Victim?.Inventory),
+
+    assists:
+      event.Participants
+        ?.filter((p) => normalize(p.Name) !== normalize(event.Killer?.Name))
+        .map((p) => p.Name)
+        .slice(0, 4) || [],
+  }
 }
 
 function formatEventForPlayer(event, playerId, playerName, index) {
@@ -67,67 +125,7 @@ function formatEventForPlayer(event, playerId, playerName, index) {
 
   if (!isKill && !isDeath) return null
 
-  return {
-    id: `event-${event.EventId || index}`,
-    type: isKill ? 'kill' : 'death',
-    opponent: isKill
-      ? event.Victim?.Name || 'Inconnu'
-      : event.Killer?.Name || 'Inconnu',
-    fame: formatFame(event.TotalVictimKillFame),
-    zone: event.Location || 'Zone inconnue',
-    time: formatFightDate(event.TimeStamp),
-    rawDate: event.TimeStamp ? new Date(event.TimeStamp).getTime() : 0,
-    weapon: isKill
-      ? event.Killer?.Equipment?.MainHand?.Type || 'Inconnu'
-      : event.Victim?.Equipment?.MainHand?.Type || 'Inconnu',
-    killerInventory: getInventory(event.Killer?.Equipment),
-    victimInventory: getInventory(event.Victim?.Equipment),
-    assists:
-      event.Participants
-        ?.filter((p) => normalize(p.Name) !== normalize(event.Killer?.Name))
-        .map((p) => p.Name)
-        .slice(0, 4) || [],
-  }
-}
-
-function formatKillFight(fight, index) {
-  return {
-    id: `kill-${fight.EventId || index}`,
-    type: 'kill',
-    opponent: fight.Victim?.Name || 'Inconnu',
-    fame: formatFame(fight.TotalVictimKillFame),
-    zone: fight.Location || 'Zone inconnue',
-    time: formatFightDate(fight.TimeStamp),
-    rawDate: fight.TimeStamp ? new Date(fight.TimeStamp).getTime() : 0,
-    weapon: fight.Killer?.Equipment?.MainHand?.Type || 'Inconnu',
-    killerInventory: getInventory(fight.Killer?.Equipment),
-    victimInventory: getInventory(fight.Victim?.Equipment),
-    assists:
-      fight.Participants
-        ?.filter((p) => normalize(p.Name) !== normalize(fight.Killer?.Name))
-        .map((p) => p.Name)
-        .slice(0, 4) || [],
-  }
-}
-
-function formatDeathFight(fight, index) {
-  return {
-    id: `death-${fight.EventId || index}`,
-    type: 'death',
-    opponent: fight.Killer?.Name || 'Inconnu',
-    fame: formatFame(fight.TotalVictimKillFame),
-    zone: fight.Location || 'Zone inconnue',
-    time: formatFightDate(fight.TimeStamp),
-    rawDate: fight.TimeStamp ? new Date(fight.TimeStamp).getTime() : 0,
-    weapon: fight.Victim?.Equipment?.MainHand?.Type || 'Inconnu',
-    killerInventory: getInventory(fight.Killer?.Equipment),
-    victimInventory: getInventory(fight.Victim?.Equipment),
-    assists:
-      fight.Participants
-        ?.filter((p) => normalize(p.Name) !== normalize(fight.Killer?.Name))
-        .map((p) => p.Name)
-        .slice(0, 4) || [],
-  }
+  return makeFight(event, isKill ? 'kill' : 'death', index)
 }
 
 function cleanFights(fights, limit = EVENTS_LIMIT) {
@@ -144,7 +142,7 @@ function cleanFights(fights, limit = EVENTS_LIMIT) {
 
 async function forcePlayerEvents(playerId) {
   try {
-    await fetch(`http://localhost:3001/force-player?id=${playerId}`)
+    await fetch(`${API_URL}/force-player?id=${playerId}`)
   } catch (error) {
     console.warn('force-player ignoré:', error)
   }
@@ -153,7 +151,7 @@ async function forcePlayerEvents(playerId) {
 async function getStoredPlayerEvents(playerId, playerName) {
   try {
     const res = await fetch(
-      `http://localhost:3001/player-events?id=${playerId}&name=${encodeURIComponent(playerName)}&limit=${EVENTS_LIMIT}`
+      `${API_URL}/player-events?id=${playerId}&name=${encodeURIComponent(playerName)}&limit=${EVENTS_LIMIT}`
     )
 
     if (!res.ok) return []
@@ -178,8 +176,8 @@ async function getFallbackEvents(playerId) {
   ])
 
   return cleanFights([
-    ...kills.map(formatKillFight),
-    ...deaths.map(formatDeathFight),
+    ...kills.map((fight, index) => makeFight(fight, 'kill', index)),
+    ...deaths.map((fight, index) => makeFight(fight, 'death', index)),
   ])
 }
 

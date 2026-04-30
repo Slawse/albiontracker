@@ -22,48 +22,36 @@
 .weaponPerformance,
 .sideStats,
 .overviewBar,
-.matchRow {
+.matchRow,
+.perfCards div {
   background: rgba(10,16,32,.78);
   border: 1px solid rgba(255,255,255,.1);
   box-shadow: 0 18px 48px rgba(0,0,0,.28);
 }
 
 .profileCard {
-  padding: 24px;
+  padding: 32px 20px;
   border-radius: 22px;
   text-align: center;
 }
 
-.profileAvatar {
-  width: 86px;
-  height: 86px;
-  margin: 0 auto 14px;
-  border-radius: 24px;
-  display: grid;
-  place-items: center;
-  background: rgba(124,106,240,.18);
-  border: 1px solid rgba(139,92,246,.45);
-  color: #a78bfa;
-  font-size: 26px;
-  font-weight: 1000;
-}
-
 .profileCard h1 {
-  margin: 0;
-  font-size: 34px;
+  margin: 0 0 6px;
+  font-size: 28px;
   font-weight: 1000;
 }
 
 .profileCard p {
-  margin: 7px 0;
+  margin: 0 0 10px;
   color: #8792a8;
   font-weight: 800;
 }
 
-.profileCard span {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 6px 10px;
+.guildTag {
+  display: inline-flex;
+  min-width: 54px;
+  justify-content: center;
+  padding: 6px 12px;
   border-radius: 9px;
   color: #ffbd2e;
   background: rgba(255,189,46,.1);
@@ -71,7 +59,7 @@
   font-weight: 1000;
 }
 
-/* PERFORMANCE ARMES */
+/* WEAPON PERFORMANCE */
 
 .weaponPerformance {
   margin-top: 14px;
@@ -102,7 +90,7 @@
 .weaponPerfHead,
 .weaponPerfRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 100px 32px 32px 48px;
+  grid-template-columns: minmax(0, 1fr) 70px 32px 32px 45px;
   align-items: center;
   gap: 6px;
 }
@@ -152,16 +140,25 @@
   font-weight: 800;
 }
 
+.weaponIcon,
 .weaponMini {
   width: 34px;
   height: 34px;
-  max-width: 34px;
+  flex-shrink: 0;
+}
+
+.weaponIcon {
+  object-fit: contain;
+}
+
+.weaponMini {
   border-radius: 10px;
   display: grid;
   place-items: center;
+  background: rgba(255,255,255,.06);
+  color: #8792a8;
   font-size: 12px;
   font-weight: 1000;
-  flex-shrink: 0;
 }
 
 .weaponPerfRow > span {
@@ -177,25 +174,14 @@
   text-align: right;
 }
 
-.perfTierS {
-  color: #ffbd2e;
-  background: rgba(255,189,46,.15);
-  border: 1px solid rgba(255,189,46,.35);
+.emptyWeaponStats {
+  margin: 10px 4px 0;
+  color: #8792a8;
+  font-size: 12px;
+  font-weight: 800;
 }
 
-.perfTierA {
-  color: #28e98b;
-  background: rgba(40,233,139,.12);
-  border: 1px solid rgba(40,233,139,.3);
-}
-
-.perfTierB {
-  color: #6ca4ff;
-  background: rgba(80,156,255,.12);
-  border: 1px solid rgba(80,156,255,.3);
-}
-
-/* STATS SIDE */
+/* SIDE STATS */
 
 .sideStats {
   margin-top: 14px;
@@ -230,7 +216,7 @@
   font-weight: 1000;
 }
 
-/* MAIN OVERVIEW */
+/* OVERVIEW */
 
 .overviewBar {
   padding: 20px;
@@ -270,7 +256,35 @@
   gap: 14px;
 }
 
-/* MATCHES */
+/* TABS */
+
+.profileTabs {
+  margin-top: 18px;
+  padding: 6px;
+  display: inline-flex;
+  gap: 6px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.1);
+}
+
+.profileTabs button {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 20px;
+  background: transparent;
+  color: #8792a8;
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.profileTabs .activeTab {
+  color: white;
+  background: rgba(124,106,240,.28);
+  box-shadow: inset 0 0 0 1px rgba(139,92,246,.55);
+}
+
+/* MATCH LIST */
 
 .trackerSectionTitle {
   margin: 24px 0 14px;
@@ -313,7 +327,7 @@
   min-height: 78px;
   padding: 14px 16px;
   display: grid;
-  grid-template-columns: 90px 1.4fr 110px 130px 40px;
+  grid-template-columns: 90px minmax(0, 1.4fr) 90px 100px 130px 40px;
   align-items: center;
   gap: 14px;
 }
@@ -353,6 +367,60 @@
   font-weight: 1000;
 }
 
+.weaponWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.weaponWithIcon img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.weaponWithIcon div {
+  min-width: 0;
+}
+
+.weaponWithIcon strong,
+.weaponWithIcon span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.matchAssists {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #a8b3c7;
+  font-weight: 1000;
+}
+
+.matchAssists strong {
+  color: #cbd5e1;
+  font-size: 21px;
+  font-weight: 1000;
+}
+
+.assistIcon {
+  font-size: 20px;
+  opacity: .75;
+  filter: grayscale(1);
+}
+
+.matchScore strong {
+  font-size: 20px;
+}
+
+.matchOpponent strong {
+  font-size: 17px;
+}
+
 .matchArrow {
   justify-self: end;
   width: 32px;
@@ -369,42 +437,140 @@
   transform: rotate(180deg);
 }
 
-.matchDetails {
+/* DETAILS */
+
+.fightDetailsWrap {
   padding: 0 16px 16px 106px;
+}
+
+.detailsToolbar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.detailsViewTabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+}
+
+.detailsViewTabs button {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: transparent;
+  color: #8792a8;
+  font-weight: 900;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.detailsViewTabs button:hover {
+  background: rgba(124,106,240,.2);
+  color: white;
+}
+
+.activeDetailsTab {
+  background: rgba(124,106,240,.4) !important;
+  color: white !important;
+  box-shadow: inset 0 0 0 1px rgba(139,92,246,.6);
+}
+
+.matchDetails,
+.inventoryMode {
   display: grid;
-  grid-template-columns: 1fr 1fr .7fr;
   gap: 12px;
+}
+
+.matchDetails {
+  grid-template-columns: 1fr 1fr .7fr;
+}
+
+.inventoryMode {
+  grid-template-columns: 1fr 300px;
 }
 
 .inventoryBox,
 .assistBox {
-  padding: 15px;
+  padding: 18px;
   border-radius: 15px;
   background: rgba(0,0,0,.25);
   border: 1px solid rgba(255,255,255,.08);
 }
 
-.inventoryBox h3,
+.gearBoxTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.gearBoxTop h3,
 .assistBox h3 {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: 14px;
   color: #9cc7ff;
 }
 
-.itemGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+.gearBoxTop span {
+  color: #ffbd2e;
+  font-size: 11px;
+  font-weight: 900;
+  background: rgba(255,189,46,.1);
+  border: 1px solid rgba(255,189,46,.25);
+  padding: 5px 8px;
+  border-radius: 999px;
 }
 
-.itemSlot {
-  min-height: 42px;
-  padding: 10px;
-  border-radius: 11px;
-  background: rgba(255,255,255,.045);
+.gearGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  justify-content: center;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.gearSlot {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.04);
   border: 1px solid rgba(255,255,255,.08);
+  display: grid;
+  place-items: center;
+  transition: .2s ease;
+}
+
+.gearSlot:hover {
+  transform: scale(1.05);
+  background: rgba(124,106,240,.15);
+}
+
+.gearSlot img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+}
+
+.emptyGear {
+  grid-column: 1 / -1;
+  color: #8792a8;
   font-size: 12px;
   font-weight: 800;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.assistBox h3 {
+  margin-bottom: 12px;
 }
 
 .assistBox span {
@@ -420,6 +586,72 @@
 .assistBox p {
   color: #8792a8;
   font-weight: 800;
+}
+
+/* STATS TAB */
+
+.statOverview {
+  margin-top: 18px;
+}
+
+.perfCards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.perfCards div {
+  padding: 22px;
+  text-align: center;
+  border-radius: 18px;
+}
+
+.perfCards strong {
+  display: block;
+  font-size: 32px;
+  font-weight: 1000;
+}
+
+.perfCards span {
+  display: block;
+  margin-top: 8px;
+  color: #8792a8;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+/* PAGINATION */
+
+.pagination {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pagination button {
+  min-width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  background: rgba(255,255,255,.05);
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.pagination button:hover {
+  background: rgba(124,106,240,.25);
+}
+
+.pagination button:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.pagination .activePage {
+  background: rgba(124,106,240,.45);
+  border-color: rgba(139,92,246,.8);
 }
 
 /* COLORS */
@@ -443,230 +675,36 @@
     grid-template-columns: 1fr;
   }
 
-  .overviewNumbers {
+  .overviewNumbers,
+  .perfCards {
     grid-template-columns: 1fr;
   }
 
   .matchRow summary {
-    grid-template-columns: 80px 1fr 40px;
+    grid-template-columns: 78px 1fr 40px;
   }
 
+  .matchAssists,
   .matchScore,
   .matchOpponent {
     display: none;
   }
 
-  .matchDetails {
+  .fightDetailsWrap {
     padding-left: 16px;
+  }
+
+  .matchDetails,
+  .inventoryMode {
     grid-template-columns: 1fr;
   }
-}
-.profileTabs {
-  margin-top: 18px;
-  padding: 6px;
-  display: inline-flex;
-  gap: 6px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.055);
-  border: 1px solid rgba(255,255,255,.1);
-}
 
-.profileTabs button {
-  border: 0;
-  border-radius: 10px;
-  padding: 11px 20px;
-  background: transparent;
-  color: #8792a8;
-  font-weight: 1000;
-  cursor: pointer;
-}
+  .detailsToolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
-.profileTabs .activeTab {
-  color: white;
-  background: rgba(124,106,240,.28);
-  box-shadow: inset 0 0 0 1px rgba(139,92,246,.55);
-}
-
-.statOverview {
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 14px;
-}
-
-.radarCard,
-.perfCards div {
-  border-radius: 18px;
-  background: rgba(10,16,32,.78);
-  border: 1px solid rgba(255,255,255,.1);
-  box-shadow: 0 18px 48px rgba(0,0,0,.28);
-}
-
-.radarCard {
-  padding: 18px;
-}
-
-.miniTitle {
-  color: #dbeafe;
-  font-size: 13px;
-  font-weight: 1000;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
-.radarWrap {
-  display: grid;
-  place-items: center;
-}
-
-.radar {
-  width: 270px;
-  height: 270px;
-}
-
-.radarGrid {
-  fill: rgba(124,106,240,.05);
-  stroke: rgba(255,255,255,.12);
-  stroke-width: 2;
-}
-
-.radarGrid.small {
-  fill: transparent;
-  stroke: rgba(255,255,255,.08);
-}
-
-.radarShape {
-  fill: rgba(255,189,46,.22);
-  stroke: #ffbd2e;
-  stroke-width: 3;
-}
-
-.radar text {
-  fill: #8792a8;
-  font-size: 12px;
-  font-weight: 900;
-  text-anchor: middle;
-}
-
-.perfCards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
-
-.perfCards div {
-  padding: 22px;
-  text-align: center;
-}
-
-.perfCards strong {
-  display: block;
-  font-size: 32px;
-  font-weight: 1000;
-}
-
-.perfCards span {
-  display: block;
-  margin-top: 8px;
-  color: #8792a8;
-  font-size: 12px;
-  font-weight: 900;
-}
-.weaponWithIcon {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.weaponWithIcon img {
-  width: 42px;
-  height: 42px;
-  object-fit: contain;
-}
-.itemSlotImage {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.itemSlotImage img {
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.itemSlotImage span {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.profileAvatar {
-  width: 86px;
-  height: 86px;
-  border-radius: 24px;
-  display: grid;
-  place-items: center;
-  background: rgba(124,106,240,.18);
-  border: 1px solid rgba(139,92,246,.45);
-  color: #a78bfa;
-  font-size: 26px;
-  font-weight: 1000;
-}
-
-.profileCard .guildTag {
-  display: inline-flex;
-  width: auto;
-  min-width: 54px;
-  justify-content: center;
-  margin-top: 8px;
-  padding: 6px 12px;
-  border-radius: 9px;
-  color: #ffbd2e;
-  background: rgba(255,189,46,.1);
-  border: 1px solid rgba(255,189,46,.35);
-  font-weight: 1000;
-}
-.profileCard.noAvatar {
-  text-align: center;
-  padding: 32px 20px;
-}
-
-.profileCard.noAvatar h1 {
-  font-size: 28px;
-  font-weight: 1000;
-  margin-bottom: 6px;
-}
-
-.profileCard.noAvatar p {
-  color: #8792a8;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-.weaponIcon {
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.emptyWeaponStats {
-  margin: 10px 4px 0;
-  color: #8792a8;
-  font-size: 12px;
-  font-weight: 800;
-}
-.loadMoreBtn {
-  margin-top: 14px;
-  padding: 12px 18px;
-  border-radius: 12px;
-  border: none;
-  background: rgba(124,106,240,.2);
-  color: white;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.loadMoreBtn:hover {
-  background: rgba(124,106,240,.35);
+  .detailsViewTabs {
+    justify-content: center;
+  }
 }
