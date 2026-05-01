@@ -708,3 +708,20 @@
     justify-content: center;
   }
 }
+.gearSlotEmpty {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.gearSlotPlaceholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  opacity: 0.18;
+  background: rgba(255, 255, 255, 0.18);
+}
+.singleInventoryMode {
+  grid-template-columns: 1fr 300px;
+}

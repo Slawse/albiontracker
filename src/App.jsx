@@ -50,64 +50,81 @@ function normalize(value) {
   return String(value || '').toLowerCase().trim()
 }
 
-function getEquipmentItems(equipment = {}) {
-  const slots = [
-    equipment.Bag,
-    equipment.Head,
-    equipment.Cape,
-    equipment.MainHand,
-    equipment.Armor,
-    equipment.OffHand,
-    equipment.Potion,
-    equipment.Shoes,
-    equipment.Food,
-    equipment.Mount,
-  ]
-
-  return slots
-    .filter(Boolean)
-    .map((item) => item.Type)
+function isTwoHandWeapon(type = '') {
+  const upper = String(type || '').toUpperCase()
+  return upper.includes('_2H_') || upper.includes('2H_')
 }
 
-function getBagItems(inventory = []) {
-  return inventory
-    .filter(Boolean)
+function getGear(equipment = {}) {
+  const mainHand = equipment.MainHand?.Type || null
+  const offHand =
+    equipment.OffHand?.Type || (mainHand && isTwoHandWeapon(mainHand) ? mainHand : null)
+
+  return {
+    bag: equipment.Bag?.Type || null,
+    head: equipment.Head?.Type || null,
+    cape: equipment.Cape?.Type || null,
+
+    mainHand,
+    armor: equipment.Armor?.Type || null,
+    offHand,
+
+    shoes: equipment.Shoes?.Type || null,
+    food: equipment.Food?.Type || null,
+    potion: equipment.Potion?.Type || null,
+
+    mount: equipment.Mount?.Type || null,
+  }
+}
+
+function getRealInventory(entity = {}) {
+  if (!Array.isArray(entity.Inventory)) return []
+
+  return entity.Inventory
+    .filter((item) => item?.Type)
     .map((item) => item.Type)
 }
 
 function getContentType(event = {}) {
   const location = normalize(event.Location)
+
   if (!location) return 'PvP'
-  return location
+
+  return 'PvP'
 }
 
 function makeFight(event, type, index) {
   const isKill = type === 'kill'
 
+  const killer = event.Killer || {}
+  const victim = event.Victim || {}
+
   return {
     id: `${type}-${event.EventId || index}`,
     type,
     opponent: isKill
-      ? event.Victim?.Name || 'Inconnu'
-      : event.Killer?.Name || 'Inconnu',
+      ? victim.Name || 'Inconnu'
+      : killer.Name || 'Inconnu',
+
     fame: formatFame(event.TotalVictimKillFame),
     zone: getContentType(event),
     mapName: event.Location || 'Map inconnue',
     time: formatFightDate(event.TimeStamp),
     rawDate: event.TimeStamp ? new Date(event.TimeStamp).getTime() : 0,
+
     weapon: isKill
-      ? event.Killer?.Equipment?.MainHand?.Type || 'Inconnu'
-      : event.Victim?.Equipment?.MainHand?.Type || 'Inconnu',
+      ? killer.Equipment?.MainHand?.Type || 'Inconnu'
+      : victim.Equipment?.MainHand?.Type || 'Inconnu',
 
-    killerInventory: getEquipmentItems(event.Killer?.Equipment),
-    victimInventory: getEquipmentItems(event.Victim?.Equipment),
+    killerGear: getGear(killer.Equipment),
+    victimGear: getGear(victim.Equipment),
 
-    killerBag: getBagItems(event.Killer?.Inventory),
-    victimBag: getBagItems(event.Victim?.Inventory),
+    killerBag: getRealInventory(killer),
+    victimBag: getRealInventory(victim),
 
     assists:
       event.Participants
-        ?.filter((p) => normalize(p.Name) !== normalize(event.Killer?.Name))
+        ?.filter((p) => normalize(p.Name) !== normalize(killer.Name))
         .map((p) => p.Name)
         .slice(0, 4) || [],
   }

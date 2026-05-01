@@ -1,8 +1,26 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import '../styles/tracker.css'
 import { getItemImage, cleanItemName } from '../utils/items'
 
 const FIGHTS_PER_PAGE = 10
+
+const GEAR_ORDER = [
+  { key: 'bag', label: 'Sac' },
+  { key: 'head', label: 'Tête' },
+  { key: 'cape', label: 'Cape' },
+
+  { key: 'mainHand', label: 'Main principale' },
+  { key: 'armor', label: 'Armure' },
+  { key: 'offHand', label: 'Main secondaire' },
+
+  { key: 'potion', label: 'Potion' },
+  { key: 'shoes', label: 'Chaussures' },
+  { key: 'food', label: 'Nourriture' },
+
+  { key: '__empty_left_mount', label: '', empty: true },
+  { key: 'mount', label: 'Monture' },
+  { key: '__empty_right_mount', label: '', empty: true },
+]
 
 function getWeaponStatsFromFights(fights = []) {
   const weapons = {}
@@ -32,17 +50,52 @@ function getWeaponStatsFromFights(fights = []) {
     .sort((a, b) => b.total - a.total)
 }
 
-function GearGrid({ title, items = [], emptyText = 'Aucun item', note = '' }) {
+function GearGrid({ title, gear = {} }) {
   return (
     <div className="inventoryBox gearBox">
-      <div className="gearBoxTop">
-        <h3>{title}</h3>
-        {note && <span>{note}</span>}
-      </div>
+      <h3>{title}</h3>
 
       <div className="gearGrid">
-        {items.length > 0 ? (
-          items.map((item, index) => (
+        {GEAR_ORDER.map((slot) => {
+          if (slot.empty) {
+            return (
+              <div
+                key={slot.key}
+                className="gearSlot gearSlotEmpty"
+                aria-hidden="true"
+              />
+            )
+          }
+
+          const item = gear?.[slot.key]
+
+          return (
+            <div
+              className={`gearSlot ${!item ? 'emptyGearSlot' : ''}`}
+              key={slot.key}
+              title={item ? cleanItemName(item) : slot.label}
+            >
+              {item ? (
+                <img src={getItemImage(item)} alt={cleanItemName(item)} />
+              ) : (
+                <div className="gearSlotPlaceholder" />
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function InventoryGrid({ title, items = [] }) {
+  return (
+    <div className="inventoryBox gearBox">
+      <h3>{title}</h3>
+
+      {items.length > 0 ? (
+        <div className="gearGrid inventoryGrid">
+          {items.map((item, index) => (
             <div
               className="gearSlot"
               key={`${item}-${index}`}
@@ -50,19 +103,33 @@ function GearGrid({ title, items = [], emptyText = 'Aucun item', note = '' }) {
             >
               <img src={getItemImage(item)} alt={cleanItemName(item)} />
             </div>
-          ))
-        ) : (
-          <p className="emptyGear">{emptyText}</p>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <p className="emptyGear">Inventaire indisponible</p>
+      )}
+    </div>
+  )
+}
+
+function AssistsBox({ fight, suffix = '' }) {
+  return (
+    <div className="assistBox">
+      <h3>Aides</h3>
+
+      {fight.assists?.length > 0 ? (
+        fight.assists.map((assist) => (
+          <span key={`${fight.id}-${suffix}-${assist}`}>{assist}</span>
+        ))
+      ) : (
+        <p>Aucune aide</p>
+      )}
     </div>
   )
 }
 
 function FightDetails({ fight }) {
   const [viewMode, setViewMode] = useState('compare')
-
-  const victimInventory = fight.victimBag || []
 
   return (
     <div className="fightDetailsWrap">
@@ -88,52 +155,20 @@ function FightDetails({ fight }) {
 
       {viewMode === 'compare' && (
         <div className="matchDetails gearDetails">
-          <GearGrid
-            title="Stuff du tueur"
-            items={fight.killerInventory || []}
-            emptyText="Aucun stuff"
-          />
-
-          <GearGrid
-            title="Stuff de la victime"
-            items={fight.victimInventory || []}
-            emptyText="Aucun stuff"
-          />
-
-          <div className="assistBox">
-            <h3>Aides</h3>
-
-            {fight.assists?.length > 0 ? (
-              fight.assists.map((assist) => (
-                <span key={`${fight.id}-${assist}`}>{assist}</span>
-              ))
-            ) : (
-              <p>Aucune aide</p>
-            )}
-          </div>
+          <GearGrid title="Stuff du tueur" gear={fight.killerGear} />
+          <GearGrid title="Stuff de la victime" gear={fight.victimGear} />
+          <AssistsBox fight={fight} suffix="compare" />
         </div>
       )}
 
       {viewMode === 'inventory' && (
-        <div className="inventoryMode">
-          <GearGrid
+        <div className="inventoryMode singleInventoryMode">
+          <InventoryGrid
             title="Inventaire de la victime"
-            items={victimInventory}
-            emptyText="Inventaire indisponible"
-            note={victimInventory.length === 0 ? 'Indisponible' : ''}
+            items={fight.victimBag || []}
           />
 
-          <div className="assistBox inventoryAssistBox">
-            <h3>Aides</h3>
-
-            {fight.assists?.length > 0 ? (
-              fight.assists.map((assist) => (
-                <span key={`${fight.id}-inventory-${assist}`}>{assist}</span>
-              ))
-            ) : (
-              <p>Aucune aide</p>
-            )}
-          </div>
+          <AssistsBox fight={fight} suffix="inventory" />
         </div>
       )}
     </div>
@@ -143,6 +178,11 @@ function FightDetails({ fight }) {
 export default function PlayerProfile({ player }) {
   const [tab, setTab] = useState('overview')
   const [currentPage, setCurrentPage] = useState(1)
+
+  useEffect(() => {
+    setTab('overview')
+    setCurrentPage(1)
+  }, [player?.name])
 
   if (!player) return null
 
@@ -221,35 +261,12 @@ export default function PlayerProfile({ player }) {
           </div>
 
           <div className="sideStats">
-            <div>
-              <small>PvP</small>
-              <strong>{player.pvp}</strong>
-            </div>
-
-            <div>
-              <small>PvE</small>
-              <strong>{player.pve}</strong>
-            </div>
-
-            <div>
-              <small>Récolte</small>
-              <strong>{player.gathering}</strong>
-            </div>
-
-            <div>
-              <small>Fabrication</small>
-              <strong>{player.crafting}</strong>
-            </div>
-
-            <div>
-              <small>Infamie</small>
-              <strong>{player.infamy}</strong>
-            </div>
-
-            <div>
-              <small>Hellgate</small>
-              <strong>{player.hellgate}</strong>
-            </div>
+            <div><small>PvP</small><strong>{player.pvp}</strong></div>
+            <div><small>PvE</small><strong>{player.pve}</strong></div>
+            <div><small>Récolte</small><strong>{player.gathering}</strong></div>
+            <div><small>Fabrication</small><strong>{player.crafting}</strong></div>
+            <div><small>Infamie</small><strong>{player.infamy}</strong></div>
+            <div><small>Hellgate</small><strong>{player.hellgate}</strong></div>
           </div>
         </aside>
 
@@ -261,20 +278,9 @@ export default function PlayerProfile({ player }) {
             </div>
 
             <div className="overviewNumbers">
-              <div>
-                <small>Kills</small>
-                <strong className="green">{player.kills}</strong>
-              </div>
-
-              <div>
-                <small>Morts</small>
-                <strong className="red">{player.deaths}</strong>
-              </div>
-
-              <div>
-                <small>KD</small>
-                <strong>{kd}</strong>
-              </div>
+              <div><small>Kills</small><strong className="green">{player.kills}</strong></div>
+              <div><small>Morts</small><strong className="red">{player.deaths}</strong></div>
+              <div><small>KD</small><strong>{kd}</strong></div>
             </div>
           </div>
 
@@ -394,25 +400,10 @@ export default function PlayerProfile({ player }) {
           {tab === 'stats' && (
             <section className="statOverview">
               <div className="perfCards">
-                <div>
-                  <strong className="green">{player.kills}</strong>
-                  <span>Kills</span>
-                </div>
-
-                <div>
-                  <strong className="red">{player.deaths}</strong>
-                  <span>Morts</span>
-                </div>
-
-                <div>
-                  <strong>{kd}</strong>
-                  <span>KD</span>
-                </div>
-
-                <div>
-                  <strong>{winrate}%</strong>
-                  <span>WR</span>
-                </div>
+                <div><strong className="green">{player.kills}</strong><span>Kills</span></div>
+                <div><strong className="red">{player.deaths}</strong><span>Morts</span></div>
+                <div><strong>{kd}</strong><span>KD</span></div>
+                <div><strong>{winrate}%</strong><span>WR</span></div>
               </div>
             </section>
           )}
