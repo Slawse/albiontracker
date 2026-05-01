@@ -4,12 +4,27 @@ import fs from 'fs'
 
 const app = express()
 app.use(cors())
+app.use(express.json())
 
 const BASE = 'https://gameinfo-ams.albiononline.com/api/gameinfo'
 const PORT = 3001
 
 const DATA_PATH = './server-data'
 const EVENTS_FILE = `${DATA_PATH}/events.json`
+
+const PRICE_BASE = 'https://europe.albion-online-data.com/api/v2/stats/prices'
+const PRICE_LOCATIONS = [
+  'Caerleon',
+  'Bridgewatch',
+  'Martlock',
+  'Fort Sterling',
+  'Lymhurst',
+  'Thetford',
+  'Brecilien',
+]
+
+const PRICE_CACHE_TTL = 1000 * 60 * 10
+const priceCache = new Map()
 
 if (!fs.existsSync(DATA_PATH)) {
   fs.mkdirSync(DATA_PATH)
@@ -25,6 +40,53 @@ function loadEvents() {
 
 function saveEvents(events) {
   fs.writeFileSync(EVENTS_FILE, JSON.stringify(events, null, 2))
+}
+
+function getSafeQuality(value) {
+  const quality = Number(value || 1)
+
+  if (quality >= 1 && quality <= 5) {
+    return quality
+  }
+
+  return 1
+}
+
+function getBestPrice(prices = []) {
+  const validSellPrices = prices
+    .map((price) => {
+      const best =
+        price.sell_price_min > 0
+          ? price.sell_price_min
+          : price.sell_price_max > 0
+            ? price.sell_price_max
+            : price.buy_price_max > 0
+              ? price.buy_price_max
+              : 0
+
+      const updatedAt =
+        price.sell_price_min_date !== '0001-01-01T00:00:00'
+          ? price.sell_price_min_date
+          : price.sell_price_max_date !== '0001-01-01T00:00:00'
+            ? price.sell_price_max_date
+            : price.buy_price_max_date
+
+      return {
+        city: price.city,
+        quality: price.quality,
+        price: best,
+        updatedAt,
+      }
+    })
+    .filter((price) => price.price && price.price > 0)
+
+  if (validSellPrices.length === 0) {
+    return null
+  }
+
+  validSellPrices.sort((a, b) => a.price - b.price)
+
+  return validSellPrices[0]
 }
 
 async function fetchAndStoreEvents() {
@@ -46,6 +108,56 @@ async function fetchAndStoreEvents() {
   } catch (error) {
     console.error('Erreur fetch events:', error)
   }
+}
+
+async function fetchAlbionPrices(itemIds = [], quality = 1) {
+  const cleanItemIds = itemIds.filter(Boolean)
+
+  if (cleanItemIds.length === 0) return []
+
+  const locations = PRICE_LOCATIONS.join(',')
+  const encodedItems = cleanItemIds.map((id) => encodeURIComponent(id)).join(',')
+
+  const url = `${PRICE_BASE}/${encodedItems}.json?locations=${encodeURIComponent(locations)}&qualities=${quality}`
+
+  const response = await fetch(url)
+
+  if (!response.ok) {
+    return []
+  }
+
+  return response.json()
+}
+
+async function getItemPrice(itemId, quality = 1) {
+  const safeQuality = getSafeQuality(quality)
+  const cacheKey = `${itemId}:${safeQuality}`
+  const cached = priceCache.get(cacheKey)
+
+  if (cached && Date.now() - cached.createdAt < PRICE_CACHE_TTL) {
+    return cached.data
+  }
+
+  const prices = await fetchAlbionPrices([itemId], safeQuality)
+  const bestPrice = getBestPrice(prices)
+
+  const data = {
+    itemId,
+    requestedQuality: safeQuality,
+    usedQuality: safeQuality,
+    fallback: false,
+    bestPrice,
+    prices,
+  }
+
+  if (bestPrice) {
+    priceCache.set(cacheKey, {
+      createdAt: Date.now(),
+      data,
+    })
+  }
+
+  return data
 }
 
 setInterval(fetchAndStoreEvents, 60000)
@@ -162,6 +274,77 @@ app.get('/player-events', (req, res) => {
     .slice(0, Number(limit))
 
   res.json(sorted)
+})
+
+app.get('/item-price/:itemId', async (req, res) => {
+  try {
+    const { itemId } = req.params
+    const quality = getSafeQuality(req.query.quality)
+
+    if (!itemId) {
+      return res.status(400).json({ error: 'itemId manquant' })
+    }
+
+    const data = await getItemPrice(itemId, quality)
+
+    res.json(data)
+  } catch (error) {
+    console.error('Erreur /item-price:', error)
+    res.status(500).json({ error: 'Erreur serveur item-price' })
+  }
+})
+
+app.post('/gear-value', async (req, res) => {
+  try {
+    const items = Array.isArray(req.body?.items) ? req.body.items : []
+
+    if (items.length === 0) {
+      return res.json({
+        total: 0,
+        pricedCount: 0,
+        itemCount: 0,
+        items: [],
+      })
+    }
+
+    const cleanItems = items
+      .filter((item) => item?.type)
+      .map((item) => ({
+        type: String(item.type),
+        quality: getSafeQuality(item.quality),
+        count: Number(item.count || 1),
+      }))
+
+    const pricedItems = await Promise.all(
+      cleanItems.map(async (item) => {
+        const priceData = await getItemPrice(item.type, item.quality)
+        const price = Number(priceData?.bestPrice?.price || 0)
+
+        return {
+          ...item,
+          price,
+          total: price * item.count,
+          found: price > 0,
+          city: priceData?.bestPrice?.city || '',
+          fallback: priceData?.fallback || false,
+          usedQuality: priceData?.usedQuality || item.quality,
+        }
+      })
+    )
+
+    const total = pricedItems.reduce((sum, item) => sum + item.total, 0)
+    const pricedCount = pricedItems.filter((item) => item.found).length
+
+    res.json({
+      total,
+      pricedCount,
+      itemCount: cleanItems.length,
+      items: pricedItems,
+    })
+  } catch (error) {
+    console.error('Erreur /gear-value:', error)
+    res.status(500).json({ error: 'Erreur serveur gear-value' })
+  }
 })
 
 app.listen(PORT, () => {

@@ -55,25 +55,37 @@ function isTwoHandWeapon(type = '') {
   return upper.includes('_2H_') || upper.includes('2H_')
 }
 
-function getGear(equipment = {}) {
-  const mainHand = equipment.MainHand?.Type || null
-  const offHand =
-    equipment.OffHand?.Type || (mainHand && isTwoHandWeapon(mainHand) ? mainHand : null)
+function formatItem(item) {
+  if (!item?.Type) return null
 
   return {
-    bag: equipment.Bag?.Type || null,
-    head: equipment.Head?.Type || null,
-    cape: equipment.Cape?.Type || null,
+    type: item.Type,
+    quality: item.Quality || 1,
+    count: item.Count || 1,
+  }
+}
+
+function getGear(equipment = {}) {
+  const mainHand = formatItem(equipment.MainHand)
+
+  const offHand =
+    formatItem(equipment.OffHand) ||
+    (mainHand && isTwoHandWeapon(mainHand.type) ? mainHand : null)
+
+  return {
+    bag: formatItem(equipment.Bag),
+    head: formatItem(equipment.Head),
+    cape: formatItem(equipment.Cape),
 
     mainHand,
-    armor: equipment.Armor?.Type || null,
+    armor: formatItem(equipment.Armor),
     offHand,
 
-    shoes: equipment.Shoes?.Type || null,
-    food: equipment.Food?.Type || null,
-    potion: equipment.Potion?.Type || null,
+    potion: formatItem(equipment.Potion),
+    shoes: formatItem(equipment.Shoes),
+    food: formatItem(equipment.Food),
 
-    mount: equipment.Mount?.Type || null,
+    mount: formatItem(equipment.Mount),
   }
 }
 
@@ -81,8 +93,8 @@ function getRealInventory(entity = {}) {
   if (!Array.isArray(entity.Inventory)) return []
 
   return entity.Inventory
-    .filter((item) => item?.Type)
-    .map((item) => item.Type)
+    .map(formatItem)
+    .filter(Boolean)
 }
 
 function getContentType(event = {}) {
@@ -285,7 +297,7 @@ export default function App() {
       )}
 
       {page === 'profile' && player && (
-        <PlayerProfile player={player} />
+        <PlayerProfile player={player} onPlayerSearch={handleSearch} />
       )}
 
       {page === 'guilds' && (
