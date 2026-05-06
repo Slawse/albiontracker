@@ -22,6 +22,8 @@
 .weaponPerformance,
 .sideStats,
 .overviewBar,
+.dailySilverBar,
+.silverHistoryCard,
 .matchRow,
 .perfCards div {
   background: rgba(10,16,32,.78);
@@ -90,9 +92,9 @@
 .weaponPerfHead,
 .weaponPerfRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 70px 32px 32px 45px;
+  grid-template-columns: minmax(0, 1fr) 44px 30px 30px 42px;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .weaponPerfHead {
@@ -118,6 +120,11 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
+  overflow: hidden;
+}
+
+.weaponPerfName > div {
+  min-width: 0;
 }
 
 .weaponPerfName strong,
@@ -129,7 +136,7 @@
 }
 
 .weaponPerfName strong {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 1000;
 }
 
@@ -142,8 +149,8 @@
 
 .weaponIcon,
 .weaponMini {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
 }
 
@@ -163,13 +170,14 @@
 
 .weaponPerfRow > span {
   white-space: nowrap;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 900;
   color: white;
+  text-align: right;
 }
 
 .weaponPerfRow b {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 1000;
   text-align: right;
 }
@@ -197,23 +205,30 @@
   padding: 14px;
   border-radius: 14px;
   background: rgba(255,255,255,.045);
+  min-width: 0;
 }
 
 .sideStats small,
 .overviewNumbers small {
   display: block;
   color: #8792a8;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 950;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sideStats strong,
 .overviewNumbers strong {
   display: block;
   margin-top: 5px;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 1000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* OVERVIEW */
@@ -254,6 +269,230 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
+}
+
+.dailySilverBar {
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: minmax(190px, .8fr) minmax(280px, 1.2fr) minmax(220px, .9fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.dailySilverTitle {
+  min-width: 0;
+}
+
+.dailySilverTitle strong {
+  display: block;
+  color: #dbeafe;
+  font-size: 17px;
+  font-weight: 1000;
+}
+
+.dailySilverTitle span,
+.dailySilverFlow small {
+  display: block;
+  margin-top: 4px;
+  color: #8792a8;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.dailySilverValues {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.dailySilverValues div {
+  min-width: 0;
+  padding: 11px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.07);
+}
+
+.dailySilverValues small {
+  display: block;
+  color: #8792a8;
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.dailySilverValues strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 18px;
+  font-weight: 1000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dailySilverFlow {
+  min-width: 0;
+}
+
+.silverFlowTrack {
+  height: 12px;
+  display: flex;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.silverFlowTrack span {
+  background: linear-gradient(90deg, #28e98b, #76f59f);
+}
+
+.silverFlowTrack i {
+  background: linear-gradient(90deg, #ff5f6d, #ff8b94);
+}
+
+.silverHistoryCard {
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.silverHistoryHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.silverHistoryHeader strong {
+  display: block;
+  color: #dbeafe;
+  font-size: 17px;
+  font-weight: 1000;
+}
+
+.silverHistoryHeader span {
+  display: block;
+  margin-top: 4px;
+  color: #8792a8;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.silverHistoryTotals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(84px, 1fr));
+  gap: 8px;
+}
+
+.silverHistoryTotals div {
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 13px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.07);
+}
+
+.silverHistoryTotals small {
+  display: block;
+  color: #8792a8;
+  font-size: 9px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.silverHistoryTotals b {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 1000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.silverHistoryChart {
+  position: relative;
+  margin-top: 18px;
+  min-height: 230px;
+  display: grid;
+  grid-template-columns: repeat(10, minmax(50px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.silverHistoryChart::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 48%;
+  height: 1px;
+  background: rgba(255,255,255,.11);
+}
+
+.silverDay {
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: 158px auto auto;
+  gap: 7px;
+  text-align: center;
+}
+
+.silverDayBars {
+  height: 158px;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 0;
+  align-items: stretch;
+}
+
+.silverDayBars span,
+.silverDayBars i {
+  width: 56%;
+  justify-self: center;
+  border-radius: 999px;
+  transition: filter .15s ease, transform .15s ease;
+}
+
+.silverDayBars span {
+  align-self: end;
+  background: linear-gradient(180deg, #76f59f, #28e98b);
+  box-shadow: 0 0 16px rgba(40,233,139,.12);
+}
+
+.silverDayBars i {
+  align-self: start;
+  background: linear-gradient(180deg, #ff8b94, #ff5f6d);
+  box-shadow: 0 0 16px rgba(255,95,109,.12);
+}
+
+.silverDay:hover .silverDayBars span,
+.silverDay:hover .silverDayBars i {
+  filter: brightness(1.12);
+  transform: scaleX(1.15);
+}
+
+.silverDay strong {
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 1000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.silverDay small {
+  color: #8792a8;
+  font-size: 10px;
+  font-weight: 900;
 }
 
 /* TABS */
@@ -321,13 +560,20 @@
   border-left: 5px solid #ff5f6d;
 }
 
+.matchRow.selectedFight {
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.28),
+    0 0 0 2px rgba(139,124,246,.45),
+    0 0 28px rgba(139,124,246,.18);
+}
+
 .matchRow summary {
   list-style: none;
   cursor: pointer;
   min-height: 78px;
   padding: 14px 16px;
   display: grid;
-  grid-template-columns: 90px minmax(0, 1.4fr) 90px 100px 130px 40px;
+  grid-template-columns: 90px minmax(0, 1.4fr) 54px 90px 100px 130px 40px;
   align-items: center;
   gap: 14px;
 }
@@ -390,6 +636,23 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.opponentWeaponMini {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+}
+
+.opponentWeaponMini img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border-radius: 9px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
 }
 
 .matchAssists {
@@ -620,6 +883,578 @@
   font-weight: 900;
 }
 
+.fightAnalyticsGrid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, .8fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.analyticsSideStack {
+  display: grid;
+  gap: 14px;
+}
+
+.analyticsCard {
+  min-width: 0;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(10,16,32,.78);
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: 0 18px 48px rgba(0,0,0,.28);
+  overflow: hidden;
+}
+
+.trendCard {
+  display: grid;
+  grid-template-rows: auto minmax(230px, 1fr) auto;
+  gap: 14px;
+}
+
+.analyticsHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.analyticsHeader strong {
+  display: block;
+  color: #dbeafe;
+  font-size: 16px;
+  font-weight: 1000;
+}
+
+.analyticsHeader span {
+  display: block;
+  margin-top: 4px;
+  color: #8792a8;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.analyticsPills {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.analyticsPills span {
+  margin: 0;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 1000;
+}
+
+.fightLineChart {
+  width: 100%;
+  height: 100%;
+  min-height: 230px;
+  display: block;
+}
+
+.fightLineChart line {
+  stroke: rgba(255,255,255,.16);
+  stroke-width: 2;
+}
+
+.fightLineChart .chartGridLine {
+  stroke: rgba(255,255,255,.065);
+  stroke-width: 1;
+}
+
+.chartArea {
+  fill: rgba(124,106,240,.14);
+}
+
+.chartLine {
+  fill: none;
+  stroke: #8b7cf6;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 12px rgba(139,124,246,.38));
+}
+
+.chartDotKill,
+.chartDotDeath {
+  stroke: #090f20;
+  stroke-width: 4;
+}
+
+.chartDotKill {
+  fill: #28e98b;
+}
+
+.chartDotDeath {
+  fill: #ff5f6d;
+}
+
+.chartDotKill,
+.chartDotDeath {
+  cursor: pointer;
+  transition: r .15s ease, filter .15s ease;
+}
+
+.chartDotKill:hover,
+.chartDotDeath:hover,
+.chartDotKill:focus,
+.chartDotDeath:focus {
+  r: 8;
+  outline: none;
+  filter: drop-shadow(0 0 10px currentColor);
+}
+
+.graphSummary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.graphSummary div {
+  min-width: 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.07);
+}
+
+.graphSummary small {
+  display: block;
+  color: #8792a8;
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.graphSummary strong {
+  display: block;
+  margin-top: 5px;
+  color: white;
+  font-size: 18px;
+  font-weight: 1000;
+}
+
+.emptyAnalytics {
+  min-height: 230px;
+  display: grid;
+  place-items: center;
+  color: #8792a8;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.fightTimeline {
+  position: relative;
+  height: 150px;
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(20, minmax(5px, 1fr));
+  align-items: center;
+  gap: 7px;
+}
+
+.fightTimeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(255,255,255,.12);
+}
+
+.timelineSlot {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: grid;
+  align-items: center;
+}
+
+.timelineSlot:focus {
+  outline: none;
+}
+
+.timelineBar {
+  display: block;
+  width: 100%;
+  min-height: 12px;
+  max-height: 64px;
+  height: var(--bar-size);
+  border-radius: 999px;
+  box-shadow: 0 0 14px rgba(255,255,255,.05);
+  transition: transform .15s ease, filter .15s ease;
+}
+
+.timelineSlot:hover .timelineBar,
+.timelineSlot:focus .timelineBar {
+  transform: scaleX(1.35);
+  filter: brightness(1.12) drop-shadow(0 0 10px rgba(255,255,255,.18));
+}
+
+.timelineBar.kill {
+  align-self: end;
+  margin-bottom: 75px;
+  background: linear-gradient(180deg, #76f59f, #28e98b);
+}
+
+.timelineBar.death {
+  align-self: start;
+  margin-top: 75px;
+  background: linear-gradient(180deg, #ff8b94, #ff5f6d);
+}
+
+.distributionGrid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 118px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.contentDonut {
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background:
+    radial-gradient(circle at center, #0c1428 0 55%, transparent 56%),
+    conic-gradient(#28e98b 0 var(--solo-percent), #7c6af0 var(--solo-percent) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+.contentDonut strong {
+  color: white;
+  font-size: 24px;
+  font-weight: 1000;
+}
+
+.contentDonut span {
+  margin-top: 2px;
+  color: #8792a8;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.contentLegend {
+  display: grid;
+  gap: 10px;
+}
+
+.contentLegend div {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  color: #a8b3c7;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.contentLegend strong {
+  color: white;
+  font-size: 13px;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.greenBg {
+  background: #28e98b;
+}
+
+.purpleBg {
+  background: #7c6af0;
+}
+
+.topWeaponBars {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.topWeaponBar {
+  display: grid;
+  grid-template-columns: minmax(0, 118px) 1fr 24px;
+  align-items: center;
+  gap: 10px;
+}
+
+.topWeaponBar span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #dbeafe;
+  font-size: 11px;
+  font-weight: 1000;
+}
+
+.topWeaponBar div {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.07);
+  overflow: hidden;
+}
+
+.topWeaponBar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8b7cf6, #28e98b);
+}
+
+.topWeaponBar strong {
+  color: white;
+  font-size: 12px;
+  font-weight: 1000;
+  text-align: right;
+}
+
+/* WEAPON STATS TAB */
+
+.weaponStatsTab {
+  margin-top: 18px;
+}
+
+.weaponStatsHeader {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.weaponStatsHeader h2 {
+  margin: 0;
+  color: #9cc7ff;
+  font-size: 24px;
+  font-weight: 1000;
+}
+
+.weaponStatsHeader p {
+  margin: 5px 0 0;
+  color: #8792a8;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.weaponDeepList {
+  display: grid;
+  gap: 12px;
+}
+
+.weaponDeepCard {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(10,16,32,.78);
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: 0 18px 48px rgba(0,0,0,.28);
+}
+
+.weaponDeepTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.weaponDeepIdentity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.weaponDeepIdentity img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.weaponDeepIdentity div {
+  min-width: 0;
+}
+
+.weaponDeepIdentity strong,
+.weaponDeepIdentity span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weaponDeepIdentity strong {
+  color: white;
+  font-size: 18px;
+  font-weight: 1000;
+}
+
+.weaponDeepIdentity span {
+  margin-top: 4px;
+  color: #8792a8;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.weaponRecentForm {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.formDot {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(255,255,255,.04);
+}
+
+.formDot.kill {
+  background: #28e98b;
+}
+
+.formDot.death {
+  background: #ff5f6d;
+}
+
+.formDot:hover,
+.formDot:focus {
+  outline: none;
+  transform: scale(1.18);
+  filter: brightness(1.12);
+}
+
+.weaponDeepMetrics {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+
+.weaponDeepMetrics div {
+  min-width: 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.07);
+}
+
+.weaponDeepMetrics small {
+  display: block;
+  color: #8792a8;
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.weaponDeepMetrics strong {
+  display: block;
+  margin-top: 5px;
+  color: white;
+  font-size: 17px;
+  font-weight: 1000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weaponDeepBottom {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: .75fr 1fr 1fr;
+  gap: 10px;
+}
+
+.weaponBreakdown {
+  min-width: 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(0,0,0,.2);
+  border: 1px solid rgba(255,255,255,.07);
+}
+
+.breakdownTitle {
+  margin-bottom: 10px;
+  color: #dbeafe;
+  font-size: 12px;
+  font-weight: 1000;
+}
+
+.miniSplit {
+  height: 10px;
+  display: flex;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+}
+
+.miniSplit span {
+  background: #28e98b;
+}
+
+.miniSplit i {
+  background: #7c6af0;
+}
+
+.miniLegend {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #8792a8;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.weaponTagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.weaponTagList span {
+  max-width: 100%;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(124,106,240,.14);
+  border: 1px solid rgba(139,92,246,.28);
+  color: #d8d0ff;
+  font-size: 11px;
+  font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spellBreakdown p {
+  margin: 0;
+  color: #8792a8;
+  font-size: 12px;
+  font-weight: 850;
+}
+
 /* PAGINATION */
 
 .pagination {
@@ -675,9 +1510,49 @@
     grid-template-columns: 1fr;
   }
 
+  .dailySilverBar {
+    grid-template-columns: 1fr;
+  }
+
+  .dailySilverValues {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .silverHistoryHeader {
+    flex-direction: column;
+  }
+
+  .silverHistoryTotals {
+    width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .silverHistoryChart {
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+
   .overviewNumbers,
   .perfCards {
     grid-template-columns: 1fr;
+  }
+
+  .fightAnalyticsGrid,
+  .weaponDeepBottom {
+    grid-template-columns: 1fr;
+  }
+
+  .weaponDeepMetrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .weaponDeepTop {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .weaponRecentForm {
+    justify-content: flex-start;
   }
 
   .matchRow summary {
@@ -685,6 +1560,7 @@
   }
 
   .matchAssists,
+  .opponentWeaponMini,
   .matchScore,
   .matchOpponent {
     display: none;

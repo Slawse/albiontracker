@@ -1,3 +1,5 @@
+import { detectEventContent } from '../utils/contentDetection'
+
 const BASE_URL = 'http://localhost:3001'
 
 export async function searchPlayerByName(name) {
@@ -49,4 +51,31 @@ export async function getRecentEvents(limit = 50, offset = 0) {
   }
 
   return res.json()
+}
+
+export async function getEventDetails(eventId) {
+  if (!eventId) return null
+
+  const res = await fetch(`${BASE_URL}/event/${eventId}`)
+
+  if (!res.ok) {
+    throw new Error(`Erreur event details proxy : ${eventId}`)
+  }
+
+  return res.json()
+}
+
+export function getFightEventId(fight) {
+  return (
+    fight?.EventId ||
+    fight?.eventId ||
+    fight?.id ||
+    fight?.Id ||
+    fight?.event_id ||
+    null
+  )
+}
+
+export function getEventContent(event) {
+  return event?.DetectedContent || event?.detectedContent || detectEventContent(event)
 }

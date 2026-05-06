@@ -21,17 +21,88 @@ import {
   getPlayerKills,
   getPlayerDeaths,
 } from './api/albionApi'
+import { detectEventContent } from './utils/contentDetection'
 
-const EVENTS_LIMIT = 50
+const EVENTS_LIMIT = 500
 const API_URL = 'http://localhost:3001'
 
 function formatFame(value) {
   return `${Math.round((value || 0) / 1000)}K`
 }
 
-function formatMillions(value) {
-  if (!value) return '0'
-  return `${Math.round(value / 1000000)}M`
+function formatCompact(value) {
+  const number = Number(value || 0)
+
+  if (!number) return '0'
+
+  if (number >= 1000000000) {
+    return `${(number / 1000000000).toFixed(1)}B`
+  }
+
+  if (number >= 1000000) {
+    return `${(number / 1000000).toFixed(number >= 10000000 ? 0 : 1)}M`
+  }
+
+  if (number >= 1000) {
+    return `${Math.round(number / 1000)}K`
+  }
+
+  return number.toLocaleString('fr-FR')
+}
+
+function formatRatio(value) {
+  const number = Number(value || 0)
+  return number ? number.toFixed(2) : '0'
+}
+
+function makeStat(label, value) {
+  return {
+    label,
+    value: formatCompact(value),
+    rawValue: Number(value || 0),
+  }
+}
+
+function makeProfileStats(profile = {}, found = {}) {
+  const lifetime = profile.LifetimeStatistics || {}
+  const pve = lifetime.PvE || {}
+  const gathering = lifetime.Gathering || {}
+
+  const stats = [
+    makeStat('PvP fame', profile.KillFame || found.KillFame),
+    makeStat('Death fame', profile.DeathFame || found.DeathFame),
+    { label: 'Fame ratio', value: formatRatio(profile.FameRatio || found.FameRatio) },
+    makeStat('PvE total', pve.Total),
+    makeStat('Mists PvE', pve.Mists),
+    makeStat('Hellgate PvE', pve.Hellgate),
+    makeStat('Corrupted PvE', pve.CorruptedDungeon),
+    makeStat('Avalon PvE', pve.Avalon),
+    makeStat('Outlands PvE', pve.Outlands),
+    makeStat('Royal PvE', pve.Royal),
+    makeStat('Récolte', gathering.All?.Total),
+    makeStat('Fibre', gathering.Fiber?.Total),
+    makeStat('Peaux', gathering.Hide?.Total),
+    makeStat('Minerai', gathering.Ore?.Total),
+    makeStat('Pierre', gathering.Rock?.Total),
+    makeStat('Bois', gathering.Wood?.Total),
+    makeStat('Fabrication', lifetime.Crafting?.Total),
+    makeStat('Pêche', lifetime.FishingFame),
+    makeStat('Farming', lifetime.FarmingFame),
+    makeStat('Crystal', lifetime.CrystalLeague),
+  ]
+
+  const optionalStats = [
+    ['Infamie', profile.Infamy || profile.infamy || found.Infamy || found.infamy],
+    ['Réputation', profile.Reputation || profile.reputation || found.Reputation || found.reputation],
+  ]
+
+  optionalStats.forEach(([label, value]) => {
+    if (value || value === 0) {
+      stats.push(makeStat(label, value))
+    }
+  })
+
+  return stats
 }
 
 function formatFightDate(timestamp) {
@@ -62,6 +133,8 @@ function formatItem(item) {
     type: item.Type,
     quality: item.Quality || 1,
     count: item.Count || 1,
+    activeSpells: Array.isArray(item.ActiveSpells) ? item.ActiveSpells : [],
+    passiveSpells: Array.isArray(item.PassiveSpells) ? item.PassiveSpells : [],
   }
 }
 
@@ -97,12 +170,13 @@ function getRealInventory(entity = {}) {
     .filter(Boolean)
 }
 
-function getContentType(event = {}) {
-  const location = normalize(event.Location)
+function getAssistPlayers(event = {}) {
+  const participants = Array.isArray(event.Participants) ? event.Participants : []
+  const killerName = normalize(event.Killer?.Name)
 
-  if (!location) return 'PvP'
-
-  return 'PvP'
+  return participants.filter(
+    (player) => normalize(player.Name) !== killerName
+  )
 }
 
 function makeFight(event, type, index) {
@@ -110,23 +184,42 @@ function makeFight(event, type, index) {
 
   const killer = event.Killer || {}
   const victim = event.Victim || {}
+  const content = detectEventContent(event)
+
+  const assists = getAssistPlayers(event)
+    .map((player) => player.Name)
+    .filter(Boolean)
+    .slice(0, 4)
 
   return {
     id: `${type}-${event.EventId || index}`,
+    eventId: event.EventId || null,
     type,
+
     opponent: isKill
       ? victim.Name || 'Inconnu'
       : killer.Name || 'Inconnu',
 
     fame: formatFame(event.TotalVictimKillFame),
-    zone: getContentType(event),
+    zone: content.label,
+    content,
     mapName: event.Location || 'Map inconnue',
     time: formatFightDate(event.TimeStamp),
     rawDate: event.TimeStamp ? new Date(event.TimeStamp).getTime() : 0,
+    itemPower: isKill
+      ? Number(killer.AverageItemPower || 0)
+      : Number(victim.AverageItemPower || 0),
+    opponentItemPower: isKill
+      ? Number(victim.AverageItemPower || 0)
+      : Number(killer.AverageItemPower || 0),
 
     weapon: isKill
       ? killer.Equipment?.MainHand?.Type || 'Inconnu'
       : victim.Equipment?.MainHand?.Type || 'Inconnu',
+
+    opponentWeapon: isKill
+      ? victim.Equipment?.MainHand?.Type || 'Inconnu'
+      : killer.Equipment?.MainHand?.Type || 'Inconnu',
 
     killerGear: getGear(killer.Equipment),
     victimGear: getGear(victim.Equipment),
@@ -134,11 +227,7 @@ function makeFight(event, type, index) {
     killerBag: getRealInventory(killer),
     victimBag: getRealInventory(victim),
 
-    assists:
-      event.Participants
-        ?.filter((p) => normalize(p.Name) !== normalize(killer.Name))
-        .map((p) => p.Name)
-        .slice(0, 4) || [],
+    assists,
   }
 }
 
@@ -171,7 +260,7 @@ function cleanFights(fights, limit = EVENTS_LIMIT) {
 
 async function forcePlayerEvents(playerId) {
   try {
-    await fetch(`${API_URL}/force-player?id=${playerId}`)
+    await fetch(`${API_URL}/force-player?id=${playerId}&limit=${EVENTS_LIMIT}`)
   } catch (error) {
     console.warn('force-player ignoré:', error)
   }
@@ -256,13 +345,13 @@ export default function App() {
         guild: profile.GuildName || found.GuildName || 'Sans guilde',
         tag: profile.GuildTag || '---',
 
-        pvp: formatMillions(profile.KillFame || found.KillFame),
-        pve: formatMillions(profile.LifetimeStatistics?.PvE?.Total),
-        gathering: formatMillions(profile.LifetimeStatistics?.Gathering?.All?.Total),
-        crafting: formatMillions(profile.LifetimeStatistics?.Crafting?.Total),
-
-        infamy: '—',
-        hellgate: '—',
+        pvp: formatCompact(profile.KillFame || found.KillFame),
+        pve: formatCompact(profile.LifetimeStatistics?.PvE?.Total),
+        gathering: formatCompact(profile.LifetimeStatistics?.Gathering?.All?.Total),
+        crafting: formatCompact(profile.LifetimeStatistics?.Crafting?.Total),
+        infamy: formatCompact(profile.Infamy || found.Infamy),
+        hellgate: formatCompact(profile.LifetimeStatistics?.PvE?.Hellgate),
+        stats: makeProfileStats(profile, found),
 
         kills: killsCount,
         deaths: deathsCount,

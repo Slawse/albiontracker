@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import fs from 'fs'
+import { detectEventContent } from './src/utils/contentDetection.js'
 
 const app = express()
 app.use(cors())
@@ -8,6 +9,10 @@ app.use(express.json())
 
 const BASE = 'https://gameinfo-ams.albiononline.com/api/gameinfo'
 const PORT = 3001
+const STORED_EVENTS_LIMIT = 100000
+const PLAYER_HISTORY_LIMIT = 500
+const GLOBAL_EVENTS_FETCH_LIMIT = 51
+const GLOBAL_EVENTS_FETCH_PAGES = 10
 
 const DATA_PATH = './server-data'
 const EVENTS_FILE = `${DATA_PATH}/events.json`
@@ -40,6 +45,63 @@ function loadEvents() {
 
 function saveEvents(events) {
   fs.writeFileSync(EVENTS_FILE, JSON.stringify(events, null, 2))
+}
+
+function getSafeLimit(value, fallback, max) {
+  const limit = Number(value || fallback)
+
+  if (!Number.isFinite(limit) || limit <= 0) {
+    return fallback
+  }
+
+  return Math.min(Math.floor(limit), max)
+}
+
+function withDetectedContent(event) {
+  if (!event) return event
+
+  return {
+    ...event,
+    DetectedContent: detectEventContent(event),
+  }
+}
+
+async function fetchBattleSummary(battleId) {
+  if (!battleId) return null
+
+  try {
+    const response = await fetch(`${BASE}/battles/${battleId}`)
+
+    if (!response.ok) return null
+
+    return response.json()
+  } catch (error) {
+    console.warn('Battle summary indisponible:', battleId, error)
+    return null
+  }
+}
+
+async function fetchEventDetails(eventId) {
+  const storedEvent = loadEvents().find(
+    (event) => String(event.EventId) === String(eventId)
+  )
+
+  try {
+    const response = await fetch(`${BASE}/events/${eventId}`)
+
+    if (!response.ok) {
+      return withDetectedContent(storedEvent)
+    }
+
+    const event = await response.json()
+    const battleSummary = await fetchBattleSummary(event?.BattleId)
+    const enriched = battleSummary ? { ...event, battleSummary } : event
+
+    return withDetectedContent(enriched)
+  } catch (error) {
+    console.error('Erreur fetch event details:', eventId, error)
+    return withDetectedContent(storedEvent)
+  }
 }
 
 function getSafeQuality(value) {
@@ -91,8 +153,20 @@ function getBestPrice(prices = []) {
 
 async function fetchAndStoreEvents() {
   try {
-    const response = await fetch(`${BASE}/events?limit=51`)
-    const newEvents = await response.json()
+    const eventPages = await Promise.all(
+      Array.from({ length: GLOBAL_EVENTS_FETCH_PAGES }, async (_, index) => {
+        const offset = index * GLOBAL_EVENTS_FETCH_LIMIT
+        const response = await fetch(
+          `${BASE}/events?limit=${GLOBAL_EVENTS_FETCH_LIMIT}&offset=${offset}`
+        )
+
+        if (!response.ok) return []
+
+        return response.json()
+      })
+    )
+
+    const newEvents = eventPages.flat()
 
     let stored = loadEvents()
     const existingIds = new Set(stored.map((event) => event.EventId))
@@ -100,7 +174,7 @@ async function fetchAndStoreEvents() {
     const fresh = newEvents.filter((event) => !existingIds.has(event.EventId))
 
     if (fresh.length > 0) {
-      stored = [...fresh, ...stored].slice(0, 5000)
+      stored = [...fresh, ...stored].slice(0, STORED_EVENTS_LIMIT)
       saveEvents(stored)
 
       console.log(`+${fresh.length} nouveaux events ajoutés`)
@@ -183,7 +257,7 @@ app.get('/player/:id', async (req, res) => {
 
 app.get('/kills/:id', async (req, res) => {
   const id = req.params.id
-  const limit = req.query.limit || 50
+  const limit = getSafeLimit(req.query.limit, PLAYER_HISTORY_LIMIT, PLAYER_HISTORY_LIMIT)
 
   const response = await fetch(`${BASE}/players/${id}/kills?limit=${limit}`)
   const data = await response.json()
@@ -193,7 +267,7 @@ app.get('/kills/:id', async (req, res) => {
 
 app.get('/deaths/:id', async (req, res) => {
   const id = req.params.id
-  const limit = req.query.limit || 50
+  const limit = getSafeLimit(req.query.limit, PLAYER_HISTORY_LIMIT, PLAYER_HISTORY_LIMIT)
 
   const response = await fetch(`${BASE}/players/${id}/deaths?limit=${limit}`)
   const data = await response.json()
@@ -211,16 +285,27 @@ app.get('/events', async (req, res) => {
   res.json(data)
 })
 
+app.get('/event/:id', async (req, res) => {
+  const data = await fetchEventDetails(req.params.id)
+
+  if (!data) {
+    return res.status(404).json({ error: 'Event introuvable' })
+  }
+
+  res.json(data)
+})
+
 app.get('/force-player', async (req, res) => {
   const { id } = req.query
+  const limit = getSafeLimit(req.query.limit, PLAYER_HISTORY_LIMIT, PLAYER_HISTORY_LIMIT)
 
   if (!id) {
     return res.json({ added: 0 })
   }
 
   try {
-    const killsRes = await fetch(`${BASE}/players/${id}/kills`)
-    const deathsRes = await fetch(`${BASE}/players/${id}/deaths`)
+    const killsRes = await fetch(`${BASE}/players/${id}/kills?limit=${limit}`)
+    const deathsRes = await fetch(`${BASE}/players/${id}/deaths?limit=${limit}`)
 
     const kills = await killsRes.json()
     const deaths = await deathsRes.json()
@@ -233,7 +318,7 @@ app.get('/force-player', async (req, res) => {
     )
 
     if (fresh.length > 0) {
-      stored = [...fresh, ...stored].slice(0, 5000)
+      stored = [...fresh, ...stored].slice(0, STORED_EVENTS_LIMIT)
       saveEvents(stored)
     }
 
@@ -245,7 +330,8 @@ app.get('/force-player', async (req, res) => {
 })
 
 app.get('/player-events', (req, res) => {
-  const { id, name, limit = 50 } = req.query
+  const { id, name } = req.query
+  const limit = getSafeLimit(req.query.limit, PLAYER_HISTORY_LIMIT, PLAYER_HISTORY_LIMIT)
 
   if (!id && !name) {
     return res.json([])
