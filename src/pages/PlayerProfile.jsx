@@ -1234,7 +1234,7 @@ function FightDistribution({ analytics, weaponStats }) {
   )
 }
 
-function WeaponDeepStatsTab({ weapons = [], onFightSelect }) {
+function WeaponDeepStatsTab({ weapons = [], onFightSelect, onWeaponSelect }) {
   if (weapons.length === 0) {
     return (
       <section className="weaponStatsTab">
@@ -1256,7 +1256,12 @@ function WeaponDeepStatsTab({ weapons = [], onFightSelect }) {
         {weapons.map((weapon) => (
           <article className="weaponDeepCard" key={weapon.weapon}>
             <div className="weaponDeepTop">
-              <div className="weaponDeepIdentity">
+              <button
+                type="button"
+                className="weaponDeepIdentity weaponDeepIdentityButton"
+                onClick={() => onWeaponSelect?.({ weapon: weapon.weapon })}
+                disabled={weapon.weapon === 'Inconnu'}
+              >
                 {weapon.weapon !== 'Inconnu' ? (
                   <img
                     src={getItemImage(weapon.weapon)}
@@ -1272,7 +1277,7 @@ function WeaponDeepStatsTab({ weapons = [], onFightSelect }) {
                     {weapon.total} fights · {weapon.mainTier} {weapon.mainEnchant} · {weapon.mainQuality}
                   </span>
                 </div>
-              </div>
+              </button>
 
               <div className="weaponRecentForm">
                 {weapon.recent.map((fight) => (
@@ -1508,7 +1513,7 @@ function FightDetails({ fight, onItemClick, onPlayerSearch }) {
   )
 }
 
-export default function PlayerProfile({ player, onPlayerSearch }) {
+export default function PlayerProfile({ player, onPlayerSearch, onWeaponSelect }) {
   const [tab, setTab] = useState('overview')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedItem, setSelectedItem] = useState(null)
@@ -1618,7 +1623,13 @@ export default function PlayerProfile({ player, onPlayerSearch }) {
 
             {weaponStats.length > 0 ? (
               weaponStats.map((weapon) => (
-                <div className="weaponPerfRow" key={weapon.weapon}>
+                <button
+                  type="button"
+                  className="weaponPerfRow"
+                  key={weapon.weapon}
+                  onClick={() => onWeaponSelect?.({ weapon: weapon.weapon })}
+                  disabled={weapon.weapon === 'Inconnu'}
+                >
                   <div className="weaponPerfName">
                     {weapon.weapon !== 'Inconnu' ? (
                       <img
@@ -1640,7 +1651,7 @@ export default function PlayerProfile({ player, onPlayerSearch }) {
                   <b className="green">{weapon.kills}</b>
                   <b className="red">{weapon.deaths}</b>
                   <b className="gold">{weapon.winrate}</b>
-                </div>
+                </button>
               ))
             ) : (
               <p className="emptyWeaponStats">Aucune arme trouvée</p>
@@ -1869,6 +1880,7 @@ export default function PlayerProfile({ player, onPlayerSearch }) {
             <WeaponDeepStatsTab
               weapons={weaponDeepStats}
               onFightSelect={openFightFromGraph}
+              onWeaponSelect={onWeaponSelect}
             />
           )}
         </section>

@@ -14,6 +14,7 @@ import Guilds from './pages/Guilds'
 import Rankings from './pages/Rankings'
 import Leaderboards from './pages/Leaderboards'
 import PlayerProfile from './pages/PlayerProfile'
+import WeaponMeta from './pages/meta/WeaponMeta'
 
 import {
   searchPlayerByName,
@@ -302,7 +303,22 @@ async function getFallbackEvents(playerId) {
 export default function App() {
   const [page, setPage] = useState('home')
   const [player, setPlayer] = useState(null)
+  const [selectedWeaponBase, setSelectedWeaponBase] = useState(null)
   const [loading, setLoading] = useState(false)
+
+  function handleWeaponSelect(weapon) {
+    const baseId = weapon?.baseId || weapon?.itemId || weapon?.weapon
+    if (!baseId) return
+
+    setSelectedWeaponBase(baseId)
+    setPage('weaponMeta')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function closeWeaponMeta() {
+    setPage('home')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   async function handleSearch(query) {
     const name = query.trim()
@@ -382,11 +398,24 @@ export default function App() {
       <Navbar page={page} setPage={setPage} />
 
       {page === 'home' && (
-        <Home onSearch={handleSearch} setPage={setPage} loading={loading} />
+        <Home
+          onSearch={handleSearch}
+          setPage={setPage}
+          loading={loading}
+          onWeaponSelect={handleWeaponSelect}
+        />
+      )}
+
+      {page === 'weaponMeta' && selectedWeaponBase && (
+        <WeaponMeta weaponBaseId={selectedWeaponBase} onBack={closeWeaponMeta} />
       )}
 
       {page === 'profile' && player && (
-        <PlayerProfile player={player} onPlayerSearch={handleSearch} />
+        <PlayerProfile
+          player={player}
+          onPlayerSearch={handleSearch}
+          onWeaponSelect={handleWeaponSelect}
+        />
       )}
 
       {page === 'guilds' && (

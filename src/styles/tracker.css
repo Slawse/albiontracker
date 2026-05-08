@@ -107,12 +107,26 @@
 
 .weaponPerfRow {
   padding: 9px 4px;
+  width: 100%;
+  border: 0;
   border-radius: 12px;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
   transition: .2s ease;
 }
 
 .weaponPerfRow:hover {
   background: rgba(124,106,240,.12);
+}
+
+.weaponPerfRow:disabled {
+  cursor: default;
+}
+
+.weaponPerfRow:disabled:hover {
+  background: transparent;
 }
 
 .weaponPerfName {
@@ -1281,6 +1295,26 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.weaponDeepIdentityButton {
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 12px;
+  padding: 4px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.weaponDeepIdentityButton:hover:not(:disabled) {
+  background: rgba(124,106,240,.12);
+  transform: translateY(-1px);
+}
+
+.weaponDeepIdentityButton:disabled {
+  cursor: default;
 }
 
 .weaponDeepIdentity img {

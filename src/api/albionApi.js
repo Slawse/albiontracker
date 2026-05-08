@@ -53,6 +53,26 @@ export async function getRecentEvents(limit = 50, offset = 0) {
   return res.json()
 }
 
+export async function getHomeMeta() {
+  const res = await fetch(`${BASE_URL}/home-meta`)
+
+  if (!res.ok) {
+    throw new Error('Erreur home-meta proxy')
+  }
+
+  return res.json()
+}
+
+export async function getHomeWeaponMeta(baseId) {
+  const res = await fetch(`${BASE_URL}/home-meta/weapon/${encodeURIComponent(baseId)}`)
+
+  if (!res.ok) {
+    throw new Error('Erreur weapon meta proxy')
+  }
+
+  return res.json()
+}
+
 export async function getEventDetails(eventId) {
   if (!eventId) return null
 

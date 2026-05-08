@@ -70,6 +70,14 @@ const ITEM_NAMES = {
   '2H_DAGGERPAIR_CRYSTAL': 'Bridled Fury',
   '2H_DUALCROSSBOW_HELL': 'Boltcasters',
   '2H_DUALCROSSBOW_CRYSTAL': 'Arclight Blasters',
+  '2H_SHAPESHIFTER_SET1': 'Prowling Staff',
+  '2H_SHAPESHIFTER_SET2': 'Rootbound Staff',
+  '2H_SHAPESHIFTER_SET3': 'Primal Staff',
+  '2H_SHAPESHIFTER_MORGANA': 'Bloodmoon Staff',
+  '2H_SHAPESHIFTER_HELL': 'Hellspawn Staff',
+  '2H_SHAPESHIFTER_KEEPER': 'Earthrune Staff',
+  '2H_SHAPESHIFTER_AVALON': 'Lightcaller',
+  '2H_SHAPESHIFTER_CRYSTAL': 'Stillgaze Staff',
 }
 
 function getBaseItemId(itemId) {
